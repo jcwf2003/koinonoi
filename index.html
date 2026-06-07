@@ -258,6 +258,10 @@ const PT = {
   pride: {cls:'pt-pride', label:'Self-reliance / Pride'},
 };
 
+const GIRLS = ["Kristen","Yee Wah","Xiao Yu","Ebonny","Ho Yi","Ker Ying"];
+const BOYS = ["Jeremy Chong","Jun Hong","Carny","Ivan","Ming Foong"];
+function gender(name){ return GIRLS.some(g=>name.includes(g)||g.includes(name.split(' ')[0])) ? "F" : "M"; }
+
 const LEADERS = [
   {
     name:"Jeremy Chong", total:61,
@@ -404,9 +408,9 @@ const LEADERS = [
       "Quite loving",
       "Not very social, didn't really do much in circles",
       "Not healthy",
-      "Sometimes will change; knows her problems",
+      "Sometimes will change; knows his problems",
       "Knowledge okay but sometimes not wise",
-      "No money yet; unsure if she would be willing to offer if she had money",
+      "No money yet; unsure if he would be willing to offer if he had money",
       "Studying for the sake of studying — nothing much done",
       "Relaxes too much; hobbies not really God-oriented"
     ],
@@ -415,14 +419,14 @@ const LEADERS = [
     weakness:"Health (3) is the group's lowest. Physical presence without heart in ministry. '50/50' in God & Purpose is the root issue that explains everything else.",
     note:"Honest but passive. Knowing the problem without acting on it is itself a pattern. The 50/50 posture is the core issue — nothing else will change until that shifts.",
     prayers:[
-      "Pray for a breakthrough moment where the cost of staying 50/50 becomes real to her",
-      "Pray for her health — that she takes her body seriously as something that matters to God",
+      "Pray for a breakthrough moment where the cost of staying 50/50 becomes real to him",
+      "Pray for his health — that he takes his body seriously as something that matters to God",
       "Pray for genuine heart engagement in ministry, not just physical attendance"
     ],
     actions:[
       "Write a personal answer to: 'What is the 50% I'm holding back from God, specifically?'",
       "See a doctor or begin one concrete health habit this week — even walking 20 minutes daily",
-      "Before attending the next ministry commitment, write one reason why she genuinely wants to be there"
+      "Before attending the next ministry commitment, write one reason why he genuinely wants to be there"
     ],
     discuss:[
       "You've been 50/50 for a while. What would it actually take to move that needle? What are you protecting?",
@@ -731,7 +735,10 @@ function renderProfiles(){
     <div class="card" id="card_${idx}">
       <div class="card-header">
         <div class="card-name">${l.name}</div>
-        <div class="card-score-badge">${l.total} / 100</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:${gender(l.name)==='F'?'#d4a0c0':'#8ab0d4'};border:1px solid ${gender(l.name)==='F'?'rgba(212,160,192,0.4)':'rgba(138,176,212,0.4)'};padding:5px 10px;">${gender(l.name)==='F'?'&#9792; F':'&#9794; M'}</div>
+          <div class="card-score-badge">${l.total} / 100</div>
+        </div>
       </div>
       <div class="card-body">
         <div class="card-tabs">
