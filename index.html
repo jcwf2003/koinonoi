@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOI Leaders — Life of Abundance Report</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C; --gold-light: #E8C97A; --gold-dim: #8a6f2e;
+  --ink: #1a1814; --parchment: #F5F0E8; --parchment-dark: #EDE5D0;
+  --warm-white: #FAF7F2; --muted: #7a7060;
+  --accent-red: #8B2020; --accent-green: #2A5C3F; --accent-blue: #2A4A7F;
+  --border: rgba(201,168,76,0.25); --shadow: 0 4px 32px rgba(26,24,20,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Cormorant Garamond',serif;background:var(--parchment);color:var(--ink);line-height:1.6;}
+
+@media print {
+  .no-print{display:none!important;}
+  body{background:white;font-size:11px;}
+  .page-break{page-break-before:always;}
+  .card{page-break-inside:avoid;box-shadow:none;border:1px solid #ddd;}
+  .section-block{page-break-inside:avoid;}
+  .tab-content{display:block!important;opacity:1!important;}
+  .tabs-nav{display:none!important;}
+  .tab-pane{display:block!important;}
+  details{display:block;}
+  details summary{display:none;}
+  details[open] .detail-body, details .detail-body{display:block!important;}
+}
+
+/* HEADER */
+.header{background:var(--ink);color:var(--parchment);padding:60px 48px 48px;position:relative;overflow:hidden;}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap;}
+.header h1{font-size:48px;font-weight:300;letter-spacing:2px;line-height:1.1;}
+.header h1 span{color:var(--gold);font-style:italic;}
+.header .subtitle{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-top:12px;}
+.header-actions{display:flex;gap:12px;flex-wrap:wrap;}
+.btn{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid var(--gold-dim);color:var(--gold-light);padding:12px 20px;cursor:pointer;transition:all 0.3s;white-space:nowrap;}
+.btn:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+.btn-outline{border-color:#444;color:#aaa;}
+.btn-outline:hover{background:#333;color:var(--parchment);border-color:#666;}
+
+/* TABS NAV */
+.main-tabs{max-width:1200px;margin:0 auto;padding:0 24px;}
+.tabs-nav{display:flex;gap:0;border-bottom:2px solid var(--border);margin-top:40px;flex-wrap:wrap;}
+.tab-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;padding:14px 20px;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+.tab-btn:hover{color:var(--gold);}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+.tab-pane{display:none;padding:40px 0 60px;}
+.tab-pane.active{display:block;}
+
+/* SECTION */
+.section-title{font-size:11px;font-family:'DM Mono',monospace;letter-spacing:4px;text-transform:uppercase;color:var(--gold-dim);margin-bottom:28px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+/* STAT CARDS */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:48px;}
+.stat-card{background:var(--ink);color:var(--parchment);padding:24px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);}
+.stat-card .stat-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.stat-card .stat-value{font-size:34px;font-weight:300;color:var(--gold-light);letter-spacing:-1px;}
+.stat-card .stat-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+/* RANKINGS */
+.ranking-aspect{margin-bottom:24px;}
+.ranking-aspect h4{font-size:13px;font-family:'DM Mono',monospace;letter-spacing:1px;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.aspect-avg{font-size:11px;color:var(--muted);font-weight:400;}
+.rank-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+.rank-pos{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);width:16px;text-align:right;flex-shrink:0;}
+.rank-name{width:90px;flex-shrink:0;font-size:13px;color:var(--ink);}
+.rank-bar-wrap{flex:1;height:14px;background:var(--parchment-dark);overflow:hidden;}
+.rank-bar-fill{height:100%;transition:width 0.8s ease;}
+.rank-score{font-family:'DM Mono',monospace;font-size:11px;width:22px;text-align:right;color:var(--muted);flex-shrink:0;}
+.score-bar-high{background:linear-gradient(90deg,var(--accent-green),#3d8a5f);}
+.score-bar-mid{background:linear-gradient(90deg,var(--gold-dim),var(--gold));}
+.score-bar-low{background:linear-gradient(90deg,#7a3030,var(--accent-red));}
+
+/* PATTERN TAGS */
+.pattern-tag{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;margin:2px 3px 2px 0;border-radius:0;border:1px solid;}
+.pt-fear{background:rgba(139,32,32,0.08);color:#8B2020;border-color:rgba(139,32,32,0.3);}
+.pt-distraction{background:rgba(184,115,51,0.1);color:#7a4a10;border-color:rgba(184,115,51,0.35);}
+.pt-obligation{background:rgba(80,80,140,0.1);color:#3a3a8a;border-color:rgba(80,80,140,0.3);}
+.pt-laziness{background:rgba(100,100,100,0.1);color:#555;border-color:rgba(100,100,100,0.3);}
+.pt-worldliness{background:rgba(160,80,40,0.1);color:#8a4020;border-color:rgba(160,80,40,0.3);}
+.pt-shallow-roots{background:rgba(42,74,127,0.1);color:#2A4A7F;border-color:rgba(42,74,127,0.3);}
+.pt-surrender{background:rgba(201,168,76,0.15);color:#6a5010;border-color:rgba(201,168,76,0.4);}
+.pt-isolation{background:rgba(60,120,90,0.1);color:#2A5C3F;border-color:rgba(60,120,90,0.35);}
+.pt-health{background:rgba(180,30,80,0.08);color:#901040;border-color:rgba(180,30,80,0.3);}
+.pt-pride{background:rgba(120,60,120,0.1);color:#6a3070;border-color:rgba(120,60,120,0.3);}
+
+/* INDIVIDUAL CARDS */
+.leaders-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:32px;margin-bottom:40px;}
+.card{background:var(--warm-white);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
+.card-header{background:var(--ink);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.card-name{font-size:22px;font-weight:400;color:var(--parchment);letter-spacing:0.5px;}
+.card-score-badge{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--gold);border:1px solid var(--gold-dim);padding:5px 12px;}
+.card-body{padding:24px;}
+
+/* Card inner tabs */
+.card-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;}
+.ctab{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:8px 14px;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+.ctab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.ctab-pane{display:none;}
+.ctab-pane.active{display:block;}
+
+.radar-analysis{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start;}
+.chart-wrap{width:200px;height:200px;position:relative;flex-shrink:0;}
+.mini-analysis{font-size:13.5px;line-height:1.65;}
+.mini-analysis .tag{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 7px;margin-bottom:5px;}
+.tag-strength{background:rgba(42,92,63,0.12);color:var(--accent-green);}
+.tag-weakness{background:rgba(139,32,32,0.10);color:var(--accent-red);}
+.tag-note{background:rgba(201,168,76,0.15);color:var(--gold-dim);}
+.mini-analysis p{margin-bottom:10px;font-size:13.5px;}
+
+/* Reasons table */
+.reasons-table{width:100%;border-collapse:collapse;font-size:13px;}
+.reasons-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--parchment-dark);}
+.reasons-table td{padding:9px 10px;border-bottom:1px solid rgba(201,168,76,0.1);vertical-align:top;line-height:1.5;}
+.reasons-table tr:last-child td{border-bottom:none;}
+.reasons-table .score-cell{font-family:'DM Mono',monospace;font-size:12px;text-align:center;}
+.reasons-table .aspect-cell{font-size:12px;color:var(--ink);white-space:nowrap;}
+.reasons-table .reason-cell{font-size:13px;color:#4a4438;}
+.score-hi{color:var(--accent-green);font-weight:500;}
+.score-md{color:var(--gold-dim);font-weight:500;}
+.score-lo{color:var(--accent-red);font-weight:500;}
+
+/* Action points */
+.action-section{margin-bottom:0;}
+.action-block{margin-bottom:16px;}
+.action-block h5{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.action-item{display:flex;gap:10px;margin-bottom:8px;font-size:13.5px;line-height:1.6;align-items:flex-start;}
+.action-icon{flex-shrink:0;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:2px;}
+.ai-pray{background:rgba(201,168,76,0.2);color:var(--gold-dim);}
+.ai-act{background:rgba(42,92,63,0.15);color:var(--accent-green);}
+.ai-discuss{background:rgba(42,74,127,0.15);color:var(--accent-blue);}
+
+/* Pattern summary per person */
+.patterns-row{margin-bottom:16px;}
+.patterns-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+
+/* TEAM section */
+.team-dark{background:var(--ink);color:var(--parchment);padding:40px;margin-bottom:48px;position:relative;}
+.team-dark::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.team-dark .section-title{color:var(--gold-dim);}
+.team-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:36px;margin-bottom:36px;}
+.team-col h3{font-size:15px;font-weight:400;color:var(--gold-light);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,0.2);}
+.team-col p,.team-col li{font-size:14px;color:#c8c2b4;line-height:1.7;margin-bottom:9px;}
+.team-col ul{padding-left:16px;}
+.team-col li{margin-bottom:7px;}
+
+/* PATTERNS OVERVIEW */
+.patterns-overview{background:var(--warm-white);border:1px solid var(--border);padding:32px;margin-bottom:32px;}
+.pattern-matrix{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.pattern-box{background:var(--parchment-dark);padding:16px;}
+.pattern-box .pb-name{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;color:var(--ink);}
+.pattern-box .pb-names{font-size:13px;color:var(--muted);line-height:1.6;}
+.pattern-box .pb-count{font-size:28px;font-weight:300;color:var(--gold);margin-bottom:4px;}
+
+/* DISCUSSION PROMPTS */
+.prompts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:40px;}
+.prompt-card{background:var(--warm-white);border:1px solid var(--border);padding:24px;position:relative;}
+.prompt-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;background:var(--gold);}
+.prompt-aspect{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.prompt-q{font-size:15px;line-height:1.6;font-style:italic;color:var(--ink);}
+.prompt-meta{font-size:12px;color:var(--muted);margin-top:10px;font-family:'DM Mono',monospace;}
+
+@media(max-width:700px){
+  .header h1{font-size:32px;}
+  .leaders-grid{grid-template-columns:1fr;}
+  .radar-analysis{grid-template-columns:1fr;}
+  .chart-wrap{width:100%;height:220px;}
+  .team-grid{grid-template-columns:1fr;}
+  .tab-btn{padding:10px 12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="subtitle">KOI Youth Ministry · Internal Assessment</div>
+      <h1>Life of <span>Abundance</span><br>Leaders' Report</h1>
+    </div>
+    <div class="header-actions no-print">
+      <button class="btn" onclick="window.print()">↓ Save as PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-tabs">
+  <nav class="tabs-nav no-print">
+    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('rankings')">Rankings</button>
+    <button class="tab-btn" onclick="switchTab('profiles')">Individual Profiles</button>
+    <button class="tab-btn" onclick="switchTab('patterns')">Group Patterns</button>
+    <button class="tab-btn" onclick="switchTab('team')">Team Analysis</button>
+    <button class="tab-btn" onclick="switchTab('discussion')">Discussion Prompts</button>
+  </nav>
+
+  <!-- TAB: OVERVIEW -->
+  <div class="tab-pane active" id="tab-overview">
+    <div class="section-title">Group Overview</div>
+    <div class="overview-grid" id="overviewGrid"></div>
+    <div id="overviewSummary"></div>
+  </div>
+
+  <!-- TAB: RANKINGS -->
+  <div class="tab-pane" id="tab-rankings">
+    <div class="section-title">Rankings by Aspect</div>
+    <div id="rankingsContainer"></div>
+  </div>
+
+  <!-- TAB: PROFILES -->
+  <div class="tab-pane" id="tab-profiles">
+    <div class="section-title">Individual Profiles</div>
+    <div class="leaders-grid" id="leadersGrid"></div>
+  </div>
+
+  <!-- TAB: PATTERNS -->
+  <div class="tab-pane" id="tab-patterns">
+    <div class="section-title">Recurring Themes Across the Group</div>
+    <div id="patternsContent"></div>
+  </div>
+
+  <!-- TAB: TEAM -->
+  <div class="tab-pane" id="tab-team">
+    <div class="team-dark" id="teamAnalysis"></div>
+  </div>
+
+  <!-- TAB: DISCUSSION -->
+  <div class="tab-pane" id="tab-discussion">
+    <div class="section-title">Group Discussion Prompts</div>
+    <div id="discussionContent"></div>
+  </div>
+</div>
+
+<script>
+const ASPECTS = ["God & Purpose","Ministry & Service","Family & Love ones","Social & Community","Health & Wellness","Personal Growth","Knowledge & Wisdom","Financial & Money","Career & Study","Hobbies & Relaxation"];
+const ASPECT_SHORT = ["God & Purpose","Ministry","Family","Social","Health","Growth","Wisdom","Finance","Career","Hobbies"];
+
+// Pattern tag types
+const PT = {
+  fear: {cls:'pt-fear', label:'Fear / Anxiety'},
+  distraction: {cls:'pt-distraction', label:'Distraction'},
+  obligation: {cls:'pt-obligation', label:'Obligation'},
+  laziness: {cls:'pt-laziness', label:'Passivity / Laziness'},
+  worldliness: {cls:'pt-worldliness', label:'Worldliness'},
+  shallow: {cls:'pt-shallow-roots', label:'Shallow Roots'},
+  surrender: {cls:'pt-surrender', label:'Surrender Struggle'},
+  isolation: {cls:'pt-isolation', label:'Isolation'},
+  health: {cls:'pt-health', label:'Physical Neglect'},
+  pride: {cls:'pt-pride', label:'Self-reliance / Pride'},
+};
+
+const LEADERS = [
+  {
+    name:"Jeremy Chong", total:61,
+    scores:[6,7,4,5,8,5,6,8,8,4],
+    reasons:[
+      "Know purpose, convinced of God's word but struggle to fully commit — still wants to enjoy the world",
+      "Serving sincerely but sometimes reserved, acting out of personal desires",
+      "Still not loving enough; hard to love people he dislikes or has bad impressions of",
+      "Moderate living testimony; won't conform to outside circles; tries to encourage through Christian views",
+      "Conscious on health and uses body to serve; bad sleep & rest hinders morning devotions",
+      "Always learning but not mastering; fascinated by many things but not committed; lazy in God's word",
+      "Needs more study & commitment in God's word; worldly knowledge is fine",
+      "Satisfied with God's provision; may get anxious about future; money brings temptation but still willing to give",
+      "Doing best to perform; overwhelmed with tasks which makes him neglect God",
+      "Many hobbies but no time to enjoy or relax; lacks prayer and devotion to restore spirit"
+    ],
+    patterns:['worldliness','surrender','laziness','distraction','health'],
+    strength:"Health (8), Financial (8), Career (8) — strong worldly stewardship. Sincere ministry heart.",
+    weakness:"Family (4) and Hobbies (4) are the lowest — struggles to love those he dislikes, and zero restoration time. Personal Growth is scattered and self-admitted lazy in God's word.",
+    note:"Good external performance but interpersonal warmth and spiritual restoration are significantly lagging.",
+    prayers:[
+      "Pray for softening of heart toward difficult people — that love becomes a choice, not a feeling",
+      "Pray for discipline in rest and devotions — that he would see spiritual restoration as stewardship, not luxury",
+      "Pray for freedom from the pull of the world — clarity on what full commitment to God actually looks like for him"
+    ],
+    actions:[
+      "Identify one person he finds difficult to love. Make one intentional act of kindness toward them this month",
+      "Schedule a fixed daily devotion slot — even 10 minutes — and protect it like a work commitment",
+      "Reduce one hobby-related distraction and replace it with a Sabbath practice that truly restores"
+    ],
+    discuss:[
+      "You said you still want to enjoy the world. What specifically does that mean to you — and is that actually a bad thing, or is it worth examining?",
+      "What makes it hard to love people you dislike? What would need to change in you for that to shift?"
+    ]
+  },
+  {
+    name:"Jun Hong", total:65,
+    scores:[5,9,6,5,8,8,5,7,7,5],
+    reasons:[
+      "Understands God is priority in theory but still loves many things of the world; holding back whether to fully surrender",
+      "Serving with all strength; trying to improve and help others; using 90% of time in service",
+      "Trying to love those harder to love; thankful for parents",
+      "Has a mentor; always encouraged by church; not really being salt and light outside church",
+      "Always conscious on health and improving fitness; eating habits & volume needs improvement",
+      "Constantly researching new trends and ideas; applying ideas into workplace and church",
+      "Knowing but lacking depth; trying to improve apologetics; not enough practical application",
+      "Not enough self-control in spending; needs to identify more needs vs wants; conscious of where money goes",
+      "Using all skills to optimize work; often distracted by phone or church tasks at workplace",
+      "Running to clear mind & gain knowledge; not much me-time or relaxation"
+    ],
+    patterns:['surrender','worldliness','isolation','shallow','distraction'],
+    strength:"Outstanding Ministry (9) — 90% of time in service. High Personal Growth (8) with real application. Genuine effort in difficult relationships.",
+    weakness:"God & Purpose (5) — theoretical belief without full surrender. Knowledge (5) lacks depth and application. The spiritual foundation doesn't match the output level.",
+    note:"Extremely action-oriented but risks burnout without a deeper root. Serving hard while still holding back the core.",
+    prayers:[
+      "Pray for genuine surrender — not just intellectual agreement but the will to let go of what he's holding onto",
+      "Pray for depth in God's word that transforms his inner life, not just equips his ministry output",
+      "Pray for wisdom to know when to rest, and that his identity isn't tied to how much he serves"
+    ],
+    actions:[
+      "Spend one week tracking what 'loving the world' looks like in daily decisions — bring it to prayer",
+      "Pick one book of the Bible to study slowly and deeply over the next 2 months instead of broad consumption",
+      "Set a hard stop time for church-related tasks during work hours — protect both roles"
+    ],
+    discuss:[
+      "You're giving 90% of your time to ministry but God & Purpose is 5/10. What does that gap tell you?",
+      "What does 'holding back' from full surrender look like in your daily life? What are you actually afraid of giving up?"
+    ]
+  },
+  {
+    name:"Ho Yi", total:57,
+    scores:[5,6,7,3,4,7,6,7,5,7],
+    reasons:[
+      "Understands God but hasn't truly surrendered yet",
+      "Has thoughts of leaving youth but knows she needs to serve; trying to reconnect heart, mind and soul",
+      "Needs to be more patient with loved ones; not taking family for granted especially mom",
+      "Rarely has friends outside church; doesn't really know how to bring people to Christ including relatives",
+      "Weak, easily falls ill — has realised it affects her service; improvement after taking better care",
+      "Has to do better in life; equip with Bible knowledge; taking up responsibilities avoided before",
+      "Thinks carefully before decisions but still lacks God's wisdom",
+      "Knows money belongs to God but treats money as very important — will not spend carelessly",
+      "Can study even better; can have a better testimony; regrets about university study",
+      "Has some me-time — gaming and art crafts"
+    ],
+    patterns:['surrender','isolation','health','shallow','obligation'],
+    strength:"Family (7), Personal Growth (7), Financial (7), Hobbies (7) — decent personal life balance. Increasing responsibility ownership.",
+    weakness:"Social & Community (3) is lowest in the group. Health (4) actively affects her service. Wavering in ministry commitment (6).",
+    note:"Genuine self-awareness but acting alone. Health needs urgent attention. Social isolation is the most critical gap — she can't reach people she's not connected to.",
+    prayers:[
+      "Pray for healing and sustainable health habits — that her body becomes a vessel, not a barrier",
+      "Pray for God to bring relationships outside the church into her life naturally",
+      "Pray for deep assurance of her calling so that the thought of leaving fades in the light of purpose"
+    ],
+    actions:[
+      "See a doctor or health professional if not done recently. Identify one health habit to change this month",
+      "Reach out to one non-Christian relative or contact this month — just a meal or a message, no agenda",
+      "Write down specifically what it means to 'truly surrender' and bring it as a prayer point"
+    ],
+    discuss:[
+      "You said you have thoughts of leaving youth. What would it take for you to fully commit your heart to staying?",
+      "Your Social score is 3. Is that a gifting issue, a fear issue, or a priority issue — how would you describe it?"
+    ]
+  },
+  {
+    name:"Ebonny", total:68,
+    scores:[7,7,8,7,7,8,6,7,5,6],
+    reasons:[
+      "Always asking God to open her eyes through prayer and quiet time; blessed despite challenges",
+      "Reflects on what she can do for God; always worries about the girls; always double-checks but still misses things",
+      "Has a prayer book for them; cares for the people around her",
+      "Trying to pull people back to God; always having conversations about how youth can improve",
+      "Swims, prays, quiet time as routine",
+      "Doing things out of comfort zone for God's glory; able to comfort people; pushes herself even in unknown",
+      "Needs God's grace in patiently loving stubborn people; still learning humility",
+      "No specific reason given",
+      "No specific reason given",
+      "Skips Bible study sometimes, skips cell group sometimes"
+    ],
+    patterns:['shallow','obligation','distraction'],
+    strength:"Most consistent scorer — no category below 5. Strong Family (8) and Personal Growth (8). Genuinely cares for her group with action.",
+    weakness:"Career (5) — no reflection given. Knowledge & Wisdom (6) needs deeper equipping. Skips key spiritual inputs occasionally.",
+    note:"Reliable and caring. The blank reasons for Financial and Career suggest low reflection in those areas — she should examine what she thinks about them.",
+    prayers:[
+      "Pray for patience and genuine humility with those she finds difficult to love",
+      "Pray for consistency in the spiritual disciplines she's already doing — that skipping becomes rare",
+      "Pray for deeper biblical grounding so her heart-driven leadership becomes more rooted"
+    ],
+    actions:[
+      "Spend 15 minutes reflecting on what Career & Study means in the context of glorifying God — write something down",
+      "Identify the pattern of when she skips Bible study or cell group — is it fatigue, busyness or a heart issue?",
+      "Find one resource (book, mentor, course) to go deeper in Knowledge & Wisdom this quarter"
+    ],
+    discuss:[
+      "You left Career and Financial blank. Do you think about these through a faith lens — or do they feel disconnected from your walk with God?",
+      "You worry a lot about the girls. How do you make sure that care doesn't become anxiety or control?"
+    ]
+  },
+  {
+    name:"Carny", total:55,
+    scores:[5,6,7,4,3,6,7,5,5,7],
+    reasons:[
+      "50/50, still reserving at times",
+      "Always present but heart might not be here",
+      "Quite loving",
+      "Not very social, didn't really do much in circles",
+      "Not healthy",
+      "Sometimes will change; knows her problems",
+      "Knowledge okay but sometimes not wise",
+      "No money yet; unsure if she would be willing to offer if she had money",
+      "Studying for the sake of studying — nothing much done",
+      "Relaxes too much; hobbies not really God-oriented"
+    ],
+    patterns:['surrender','obligation','laziness','worldliness','shallow'],
+    strength:"Knowledge (7) and Family (7), Hobbies (7) — knows what's right, relatively stable in personal areas.",
+    weakness:"Health (3) is the group's lowest. Physical presence without heart in ministry. '50/50' in God & Purpose is the root issue that explains everything else.",
+    note:"Honest but passive. Knowing the problem without acting on it is itself a pattern. The 50/50 posture is the core issue — nothing else will change until that shifts.",
+    prayers:[
+      "Pray for a breakthrough moment where the cost of staying 50/50 becomes real to her",
+      "Pray for her health — that she takes her body seriously as something that matters to God",
+      "Pray for genuine heart engagement in ministry, not just physical attendance"
+    ],
+    actions:[
+      "Write a personal answer to: 'What is the 50% I'm holding back from God, specifically?'",
+      "See a doctor or begin one concrete health habit this week — even walking 20 minutes daily",
+      "Before attending the next ministry commitment, write one reason why she genuinely wants to be there"
+    ],
+    discuss:[
+      "You've been 50/50 for a while. What would it actually take to move that needle? What are you protecting?",
+      "You said your heart might not be in ministry. Is that a season, or has it been the default for a long time?"
+    ]
+  },
+  {
+    name:"Ming Foong", total:55,
+    scores:[5,8,4,4,8,5,3,7,5,6],
+    reasons:[
+      "Trying to bring family to God",
+      "No specific reason given",
+      "No specific reason given",
+      "No specific reason given",
+      "No specific reason given",
+      "Still growing",
+      "No specific reason given",
+      "God provides",
+      "No specific reason given",
+      "Still likes playing; unserious in serious moments"
+    ],
+    patterns:['shallow','laziness','obligation'],
+    strength:"Ministry (8) and Health (8) — shows up and is physically capable. Financial trust (7) is genuine.",
+    weakness:"Knowledge & Wisdom (3) — lowest in the group. Family (4) and Social (4) both low. The majority of reason fields are blank — suggesting very low self-reflection depth.",
+    note:"Strong service instinct but the near-empty reasons column is the biggest red flag. Either lacks self-awareness or disengaged from the reflection process itself.",
+    prayers:[
+      "Pray for a hunger to know God's word — that knowledge becomes personal and alive, not just academic",
+      "Pray for deeper relational investment in family and community",
+      "Pray for seriousness in the right moments — that maturity grows alongside his energy"
+    ],
+    actions:[
+      "Complete the self-reflection exercise again — this time with at least 2 sentences per aspect",
+      "Identify one area of Knowledge & Wisdom to invest in this month (e.g. start reading one book of the Bible with notes)",
+      "Have one intentional conversation with a family member about faith this month"
+    ],
+    discuss:[
+      "Most of your reasons were left blank. Is that because you don't have answers, or because it felt like too much effort? Be honest.",
+      "You scored Ministry 8 but Knowledge & Wisdom 3. What do you think happens long-term if that gap doesn't close?"
+    ]
+  },
+  {
+    name:"Ker Ying", total:49,
+    scores:[8,5,5,4,5,4,5,3,5,5],
+    reasons:[
+      "Still struggling with thoughts that are not beneficial",
+      "Serving as committee, musician and publicity in church",
+      "No specific reason given",
+      "No specific reason given",
+      "Recovering after camp; knee problem",
+      "Needs someone to guide her; might be lazy sometimes",
+      "Scared to interpret God's word wrongly; afraid to speak it out",
+      "No income",
+      "Still more to improve",
+      "No specific reason given"
+    ],
+    patterns:['fear','laziness','isolation','health','shallow'],
+    strength:"God & Purpose (8) — strong spiritual identity. Serving across multiple roles in church despite physical challenges.",
+    weakness:"Financial (3) — income context. Personal Growth (4) — needs external guidance, admits passivity. Fear of misinterpreting Scripture is limiting her Knowledge application. Social (4) and Health (5) below average.",
+    note:"Lowest total score. The gap between high spiritual identity and low practical output is striking. Fear is the thread running through multiple weaknesses — it's not laziness alone, it's fear-driven inaction.",
+    prayers:[
+      "Pray for courage — that fear of getting it wrong doesn't silence her from speaking God's word",
+      "Pray for healing and strength in her knee and overall health",
+      "Pray for God to send her a mentor who can guide her Personal Growth intentionally"
+    ],
+    actions:[
+      "Identify one person in the group she trusts to be her accountability partner for growth this quarter",
+      "Practice sharing one thing she's learned from Scripture with one person this week — even if uncertain",
+      "Address the knee issue practically: physio, rest, or medical consult. Don't wait."
+    ],
+    discuss:[
+      "You're afraid to speak out God's word in case you get it wrong. What would it look like to speak it humbly instead of perfectly?",
+      "You said you need someone to guide you. Have you ever asked directly? What's stopping you?"
+    ]
+  },
+  {
+    name:"Kristen", total:76,
+    scores:[10,9,8,7,5,9,10,4,8,6],
+    reasons:[
+      "God is her saviour — her life is to live for God",
+      "Being a leader serving God and others",
+      "Family and loved ones guide and provide for her",
+      "Not much care — just being normal and encouraging others",
+      "Doesn't care about health",
+      "Looking to be mature; conscious of how she portrays herself to others",
+      "Has mentees and members under her care",
+      "Not important to her — doesn't care",
+      "Stressed",
+      "Not interested in hobbies/relaxation"
+    ],
+    patterns:['distraction','obligation','health'],
+    strength:"Spiritual conviction and leadership clarity stand out — perfect scores in God & Purpose and Knowledge. Clear purpose, invested in mentees, strong family foundation.",
+    weakness:"Health (5) and Financial (4) — openly doesn't care about either. This is a long-term sustainability risk. 'Doesn't care' is not stewardship — it's a blind spot.",
+    note:"Highest scorer. Leads with conviction. But the areas she dismisses (health, money, hobbies) are exactly where leaders burn out. Her indifference here needs to be named, not celebrated.",
+    prayers:[
+      "Pray that God opens her eyes to see physical and financial stewardship as acts of worship, not burdens",
+      "Pray against burnout — that she learns to rest before rest is forced on her",
+      "Pray for joy in restoration, not just in service"
+    ],
+    actions:[
+      "Honestly assess: if health failed tomorrow, how would that impact your ministry? Use that to start one health habit",
+      "Read one passage on financial stewardship (e.g. Proverbs 21, Luke 16) and reflect on how it applies personally",
+      "Build in one non-ministry activity per week that genuinely recharges her — even if it feels unnatural"
+    ],
+    discuss:[
+      "You said you 'don't care' about health and money. But stewardship covers both. Do you think God cares about those areas?",
+      "You scored Social at 7 with the reason 'just being normal.' Is that enough for someone in your leadership position?"
+    ]
+  },
+  {
+    name:"Xiao Yu", total:69,
+    scores:[7,6,8,3,7,6,6,7,9,10],
+    reasons:[
+      "Not 100% pursuing what God wants",
+      "Service leans toward obligation instead of obedience — despite enjoying serving with others",
+      "Hoping to be more patient toward parents",
+      "Not a good example for non-believers in circle — probably a weekend Christian",
+      "Thinks she's healthy enough to serve",
+      "Sometimes reflects but still does the same things; slowly changing and taking more time to reflect",
+      "Not well-equipped with God's word; sometimes thinks like a non-Christian",
+      "More reserved when offering but willing to help the needy",
+      "Unsure whether ACCA is what she or God wants; probably working just for money",
+      "Loves her free time and doing things she likes"
+    ],
+    patterns:['obligation','worldliness','shallow','surrender','isolation'],
+    strength:"Highest in Career (9) and maxes Hobbies (10). Strong Family (8). Financially disciplined toward others' needs.",
+    weakness:"Social & Community (3) — 'weekend Christian' outside church. Service driven by obligation not obedience. Knowledge application is weak; admits thinking like a non-Christian at times.",
+    note:"High performance, low community witness. The career-faith alignment question is real and unresolved. Her self-awareness is good but action hasn't followed reflection yet.",
+    prayers:[
+      "Pray for clarity on career direction — that she would invite God into the ACCA decision genuinely",
+      "Pray that obedience replaces obligation in her ministry posture",
+      "Pray for God to create natural bridges into her non-Christian circles so that being salt and light feels possible"
+    ],
+    actions:[
+      "This week, initiate one intentional conversation with a non-Christian friend or colleague — no agenda, just presence",
+      "Write out what obedience vs obligation looks like in how she currently serves — identify one thing to change",
+      "Spend 30 minutes in prayer specifically about career direction, and journal what comes up"
+    ],
+    discuss:[
+      "You described yourself as a 'weekend Christian.' How did you arrive at that? Is that acceptable to you, or does it bother you?",
+      "You enjoy serving with others but feel it's obligation, not obedience. What would need to change internally for that to shift?"
+    ]
+  },
+  {
+    name:"Yee Wah", total:71,
+    scores:[9,9,7,5,6,6,7,4,8,10],
+    reasons:[
+      "No specific reason given",
+      "Has a clear purpose in church; able to find joy constantly through knowing God has entrusted people to her",
+      "No specific reason given",
+      "No specific reason given",
+      "Alive and healthy",
+      "No specific reason given",
+      "No specific reason given",
+      "Willing to spend for God's people despite struggle; certain times holding back",
+      "Clearly knows that as long as work doesn't affect service; willing to give up dreams for God",
+      "Started running which allows reflection during the activity"
+    ],
+    patterns:['surrender','shallow','worldliness'],
+    strength:"Strong sense of ministry purpose and joy. Running has become a genuine spiritual discipline. Clear sacrificial posture toward career and God's people.",
+    weakness:"Financial (4) — struggle to give freely despite stated willingness. Social & Community (5) and Health (6) have vague reasoning. Several blank reasons suggest underdeveloped reflection.",
+    note:"Well-balanced spiritually with real sacrifice. The tension between financial willingness and actual struggle is honest. Blank reasons for key aspects suggest there's more under the surface she hasn't examined.",
+    prayers:[
+      "Pray for freedom from financial anxiety — that generosity flows from trust, not guilt",
+      "Pray for deeper roots in areas she left blank — that reflection becomes a regular spiritual practice",
+      "Pray for continued joy in ministry that sustains her over the long haul"
+    ],
+    actions:[
+      "Go back to the 5 blank aspects and write 2 sentences for each. Use that as a prayer journal entry",
+      "Identify what 'holding back' in financial giving looks like specifically — bring one instance to prayer",
+      "Find one person in her social or community circle to invest in intentionally this month"
+    ],
+    discuss:[
+      "You left several reasons blank. Do you think there are areas of your life you're not yet willing to examine closely?",
+      "You said you're willing to give up your dreams for God. Has that been tested yet — or is it still theoretical?"
+    ]
+  },
+  {
+    name:"Ivan", total:68,
+    scores:[7,8,8,5,8,7,6,8,4,7],
+    reasons:[
+      "Acknowledges God has provided much; desires to lead others to God and be His light",
+      "Trying best to serve wholeheartedly; sometimes distracted by self-laziness",
+      "Loving his siblings and elderly at workplace",
+      "Dislikes social situations but tries to share testimony to others",
+      "Trying to take better care of body — eating well and sleeping well",
+      "Able to see own growth in the journey with God; perspectives on life have changed",
+      "Compared to past year, can now see God's word applying in life — taught to believe and love Him",
+      "Not much money but God's providence is sufficient",
+      "Trying to let others see his differences in the workplace",
+      "Mostly spending time with others"
+    ],
+    patterns:['distraction','isolation','laziness','shallow'],
+    strength:"Ministry (8), Family (8), Health (8), Financial (8) — solid across four key areas. Genuine inner transformation visible.",
+    weakness:"Career (4) — struggles with faith-work integration. Social (5) — uncomfortable but trying. Knowledge still developing (6).",
+    note:"Strong character trajectory. Career is the clear underdeveloped area. He knows what he believes but translating it into his workplace remains the unfinished work.",
+    prayers:[
+      "Pray for courage to be a distinct witness at the workplace — not performance but genuine difference",
+      "Pray for focus in ministry that isn't derailed by self-laziness",
+      "Pray that his growing knowledge of God continues to move from intellectual to applied"
+    ],
+    actions:[
+      "Identify one specific way to be a 'light' at the workplace this week — something observable, not just attitude",
+      "Name the self-laziness pattern honestly: when does it show up, and what triggers it? Bring it to accountability",
+      "Find one way to grow in biblical knowledge this month — a structured study, not just casual reading"
+    ],
+    discuss:[
+      "Career is your lowest score at 4. How much of your workplace life is shaped by your faith right now, honestly?",
+      "You said you dislike social situations but try anyway. What keeps you going even when it's uncomfortable?"
+    ]
+  }
+];
+
+LEADERS.sort((a,b) => b.total - a.total);
+
+const CHART_COLORS = [
+  {border:'rgba(201,168,76,0.9)',bg:'rgba(201,168,76,0.12)'},
+  {border:'rgba(139,107,177,0.9)',bg:'rgba(139,107,177,0.12)'},
+  {border:'rgba(42,122,79,0.9)',bg:'rgba(42,122,79,0.12)'},
+  {border:'rgba(200,90,90,0.9)',bg:'rgba(200,90,90,0.12)'},
+  {border:'rgba(74,124,175,0.9)',bg:'rgba(74,124,175,0.12)'},
+  {border:'rgba(184,115,51,0.9)',bg:'rgba(184,115,51,0.12)'},
+  {border:'rgba(90,138,106,0.9)',bg:'rgba(90,138,106,0.12)'},
+  {border:'rgba(160,82,45,0.9)',bg:'rgba(160,82,45,0.12)'},
+  {border:'rgba(107,107,177,0.9)',bg:'rgba(107,107,177,0.12)'},
+  {border:'rgba(122,154,90,0.9)',bg:'rgba(122,154,90,0.12)'},
+  {border:'rgba(176,80,128,0.9)',bg:'rgba(176,80,128,0.12)'},
+];
+
+function scoreClass(s){ return s>=7?'score-hi':s>=5?'score-md':'score-lo'; }
+function barClass(s){ return s>=7?'score-bar-high':s>=5?'score-bar-mid':'score-bar-low'; }
+
+function switchTab(id){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ---- OVERVIEW ----
+function renderOverview(){
+  const totals = LEADERS.map(l=>l.total);
+  const avg = (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1);
+  const top = LEADERS[0];
+  const aspectAvgs = ASPECTS.map((_,i)=>LEADERS.reduce((s,l)=>s+l.scores[i],0)/LEADERS.length);
+  const bestIdx = aspectAvgs.indexOf(Math.max(...aspectAvgs));
+  const worstIdx = aspectAvgs.indexOf(Math.min(...aspectAvgs));
+
+  document.getElementById('overviewGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Leaders Assessed</div><div class="stat-value">${LEADERS.length}</div><div class="stat-sub">individuals</div></div>
+    <div class="stat-card"><div class="stat-label">Group Average</div><div class="stat-value">${avg}</div><div class="stat-sub">out of 100</div></div>
+    <div class="stat-card"><div class="stat-label">Top Performer</div><div class="stat-value">${top.total}</div><div class="stat-sub">${top.name}</div></div>
+    <div class="stat-card"><div class="stat-label">Collective Strength</div><div class="stat-value" style="font-size:20px;margin-top:4px">${ASPECTS[bestIdx]}</div><div class="stat-sub">avg ${aspectAvgs[bestIdx].toFixed(1)}/10</div></div>
+    <div class="stat-card"><div class="stat-label">Collective Weakness</div><div class="stat-value" style="font-size:20px;margin-top:4px">${ASPECTS[worstIdx]}</div><div class="stat-sub">avg ${aspectAvgs[worstIdx].toFixed(1)}/10</div></div>
+  `;
+
+  document.getElementById('overviewSummary').innerHTML = `
+    <div class="section-title" style="margin-top:36px">Score Summary</div>
+    ${LEADERS.map(l=>`
+      <div class="rank-bar-row" style="margin-bottom:10px">
+        <span class="rank-name" style="width:110px;font-size:14px">${l.name}</span>
+        <div class="rank-bar-wrap" style="height:18px"><div class="rank-bar-fill ${barClass(l.total/10)}" style="width:${l.total}%"></div></div>
+        <span class="rank-score" style="width:60px;font-size:13px">${l.total}/100</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ---- RANKINGS ----
+function renderRankings(){
+  const container = document.getElementById('rankingsContainer');
+  const aspectAvgs = ASPECTS.map((_,i)=>LEADERS.reduce((s,l)=>s+l.scores[i],0)/LEADERS.length);
+  let html = '';
+  ASPECTS.forEach((aspect,ai)=>{
+    const sorted = [...LEADERS].sort((a,b)=>b.scores[ai]-a.scores[ai]);
+    html += `<div class="ranking-aspect"><h4>${aspect} <span class="aspect-avg">— team avg: ${aspectAvgs[ai].toFixed(1)}/10</span></h4>`;
+    sorted.forEach((l,ri)=>{
+      html += `<div class="rank-bar-row">
+        <span class="rank-pos">${ri+1}</span>
+        <span class="rank-name">${l.name}</span>
+        <div class="rank-bar-wrap"><div class="rank-bar-fill ${barClass(l.scores[ai])}" style="width:${l.scores[ai]*10}%"></div></div>
+        <span class="rank-score">${l.scores[ai]}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ---- PROFILES ----
+function renderProfiles(){
+  const grid = document.getElementById('leadersGrid');
+  let html = '';
+  LEADERS.forEach((l,idx)=>{
+    const patternTags = l.patterns.map(p=>`<span class="pattern-tag ${PT[p].cls}">${PT[p].label}</span>`).join('');
+    const reasonsRows = ASPECTS.map((asp,ai)=>`
+      <tr>
+        <td class="aspect-cell">${asp}</td>
+        <td class="score-cell"><span class="${scoreClass(l.scores[ai])}">${l.scores[ai]}</span></td>
+        <td class="reason-cell">${l.reasons[ai]}</td>
+      </tr>`).join('');
+    const prayerItems = l.prayers.map(p=>`<div class="action-item"><div class="action-icon ai-pray">✦</div><span>${p}</span></div>`).join('');
+    const actionItems = l.actions.map(a=>`<div class="action-item"><div class="action-icon ai-act">→</div><span>${a}</span></div>`).join('');
+    const discussItems = l.discuss.map(d=>`<div class="action-item"><div class="action-icon ai-discuss">?</div><span><em>${d}</em></span></div>`).join('');
+
+    html += `
+    <div class="card" id="card_${idx}">
+      <div class="card-header">
+        <div class="card-name">${l.name}</div>
+        <div class="card-score-badge">${l.total} / 100</div>
+      </div>
+      <div class="card-body">
+        <div class="card-tabs">
+          <button class="ctab active" onclick="cardTab(${idx},'overview')">Overview</button>
+          <button class="ctab" onclick="cardTab(${idx},'reasons')">Reasons</button>
+          <button class="ctab" onclick="cardTab(${idx},'action')">Action & Prayer</button>
+          <button class="ctab" onclick="cardTab(${idx},'discuss')">Discussion</button>
+        </div>
+
+        <div class="ctab-pane active" id="cp_${idx}_overview">
+          <div class="radar-analysis">
+            <div class="chart-wrap"><canvas id="chart_${idx}"></canvas></div>
+            <div class="mini-analysis">
+              <div class="patterns-row"><div class="patterns-label">Recurring Themes</div>${patternTags}</div>
+              <div><span class="tag tag-strength">Strength</span></div>
+              <p>${l.strength}</p>
+              <div><span class="tag tag-weakness">Weakness</span></div>
+              <p>${l.weakness}</p>
+              <div><span class="tag tag-note">Assessment</span></div>
+              <p>${l.note}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctab-pane" id="cp_${idx}_reasons">
+          <table class="reasons-table">
+            <thead><tr><th>Aspect</th><th>Score</th><th>Reason</th></tr></thead>
+            <tbody>${reasonsRows}</tbody>
+          </table>
+        </div>
+
+        <div class="ctab-pane" id="cp_${idx}_action">
+          <div class="action-block">
+            <h5>✦ Prayer Points</h5>${prayerItems}
+          </div>
+          <div class="action-block" style="margin-top:20px">
+            <h5>→ Action Steps</h5>${actionItems}
+          </div>
+        </div>
+
+        <div class="ctab-pane" id="cp_${idx}_discuss">
+          <div class="action-block">
+            <h5>Questions for 1-on-1 or self-reflection</h5>${discussItems}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+
+  setTimeout(()=>{
+    LEADERS.forEach((l,idx)=>{
+      const cc = CHART_COLORS[idx%CHART_COLORS.length];
+      const ctx = document.getElementById(`chart_${idx}`).getContext('2d');
+      new Chart(ctx,{
+        type:'radar',
+        data:{
+          labels:ASPECT_SHORT,
+          datasets:[{data:l.scores,borderColor:cc.border,backgroundColor:cc.bg,borderWidth:2,pointBackgroundColor:cc.border,pointRadius:3,pointHoverRadius:5}]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:true,
+          scales:{r:{min:0,max:10,ticks:{stepSize:2,font:{family:'DM Mono',size:8},color:'#7a7060',backdropColor:'transparent'},grid:{color:'rgba(26,24,20,0.08)'},angleLines:{color:'rgba(26,24,20,0.08)'},pointLabels:{font:{family:'DM Mono',size:8},color:'#3a3428'}}},
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw}/10`},bodyFont:{family:'DM Mono',size:11}}}
+        }
+      });
+    });
+  },50);
+}
+
+function cardTab(idx, pane){
+  document.querySelectorAll(`#card_${idx} .ctab`).forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll(`#card_${idx} .ctab-pane`).forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`cp_${idx}_${pane}`).classList.add('active');
+}
+
+// ---- PATTERNS ----
+function renderPatterns(){
+  const patternCount = {};
+  const patternPeople = {};
+  Object.keys(PT).forEach(k=>{ patternCount[k]=0; patternPeople[k]=[]; });
+  LEADERS.forEach(l=>{
+    l.patterns.forEach(p=>{
+      patternCount[p]++;
+      patternPeople[p].push(l.name);
+    });
+  });
+  const sorted = Object.entries(patternCount).sort((a,b)=>b[1]-a[1]);
+
+  let html = `<div class="pattern-matrix" style="margin-bottom:40px">`;
+  sorted.forEach(([k,count])=>{
+    if(count===0) return;
+    html += `<div class="pattern-box">
+      <div class="pb-count">${count}</div>
+      <div class="pb-name"><span class="pattern-tag ${PT[k].cls}">${PT[k].label}</span></div>
+      <div class="pb-names">${patternPeople[k].join(', ')}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `<div class="section-title">Pattern Breakdown per Person</div>`;
+  html += `<div style="overflow-x:auto"><table class="reasons-table" style="min-width:600px">
+    <thead><tr><th>Leader</th><th>Score</th><th>Dominant Patterns</th></tr></thead><tbody>`;
+  LEADERS.forEach(l=>{
+    const tags = l.patterns.map(p=>`<span class="pattern-tag ${PT[p].cls}">${PT[p].label}</span>`).join('');
+    html += `<tr>
+      <td class="aspect-cell">${l.name}</td>
+      <td class="score-cell"><span class="${scoreClass(l.total/10)}">${l.total}</span></td>
+      <td>${tags}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+
+  html += `<div style="margin-top:40px" class="patterns-overview">
+    <div class="section-title">What the Patterns Mean</div>
+    <div class="team-grid" style="grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <p style="font-size:14px;margin-bottom:10px"><strong>Surrender Struggle</strong> is the most common theme (${patternPeople['surrender']?.length||0} leaders). Most leaders intellectually know God should come first but remain divided. This is the root issue — everything else flows from it.</p>
+        <p style="font-size:14px;margin-bottom:10px"><strong>Shallow Roots</strong> (${patternPeople['shallow']?.length||0} leaders) — many are doing ministry without deep biblical grounding. This creates service that is heart-driven but not word-anchored, which is unsustainable.</p>
+        <p style="font-size:14px"><strong>Isolation</strong> (${patternPeople['isolation']?.length||0} leaders) — significant portion of the group lacks meaningful engagement outside the church bubble. They can disciple within the community but struggle to reach outside it.</p>
+      </div>
+      <div>
+        <p style="font-size:14px;margin-bottom:10px"><strong>Worldliness</strong> (${patternPeople['worldliness']?.length||0} leaders) — competing affections with the world show up in multiple areas: career, hobbies, money, relationships. Not necessarily sinful but remains a divided loyalty.</p>
+        <p style="font-size:14px;margin-bottom:10px"><strong>Obligation vs Obedience</strong> (${patternPeople['obligation']?.length||0} leaders) — serving because it's expected rather than from a place of genuine response. Long-term this produces resentment and ministry fatigue.</p>
+        <p style="font-size:14px"><strong>Fear</strong> (${patternPeople['fear']?.length||0} leaders) — appears in fewer people but runs deep. Fear of misinterpretation, failure, and vulnerability are specific blockers that need direct pastoral attention.</p>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('patternsContent').innerHTML = html;
+}
+
+// ---- TEAM ----
+function renderTeam(){
+  const aspectAvgs = ASPECTS.map((_,i)=>({name:ASPECTS[i],avg:LEADERS.reduce((s,l)=>s+l.scores[i],0)/LEADERS.length}));
+  const sorted = [...aspectAvgs].sort((a,b)=>b.avg-a.avg);
+  const groupAvg = (LEADERS.reduce((s,l)=>s+l.total,0)/LEADERS.length).toFixed(1);
+
+  document.getElementById('teamAnalysis').innerHTML = `
+    <div class="section-title">Team Analysis</div>
+    <div class="team-grid">
+      <div class="team-col">
+        <h3>Overall Picture</h3>
+        <p>Team average is <strong>${groupAvg}/100</strong>. The group is genuinely committed to ministry, honest in reflection, and willing to serve — that's not nothing. But the reflection reveals a consistent gap: spiritual identity is higher than spiritual practice and outward witness.</p>
+        <p>The most alarming pattern is that God & Purpose — the foundation of everything — sits at a team average of just ${aspectAvgs.find(a=>a.name==="God & Purpose").avg.toFixed(1)}/10. Most leaders are still partially divided. That cascades directly into why Social & Community (avg ${aspectAvgs.find(a=>a.name==="Social & Community").avg.toFixed(1)}/10) is the weakest area: you can't be salt and light to the world while still holding onto it.</p>
+        <p>There's also a self-reflection quality gap. Several leaders left multiple reasons blank or gave one-word answers. The depth of someone's self-reflection here correlates strongly with their overall score.</p>
+      </div>
+      <div class="team-col">
+        <h3>Collective Strengths</h3>
+        <ul>
+          ${sorted.slice(0,5).map(a=>`<li><strong>${a.name}</strong> — avg ${a.avg.toFixed(1)}/10</li>`).join('')}
+          <li>High honesty in naming personal failures — this is a mature and healthy group trait</li>
+          <li>Multiple leaders demonstrate genuine joy in service, not just compliance</li>
+          <li>Strong individual financial trust in God, even among those with no income</li>
+        </ul>
+      </div>
+      <div class="team-col">
+        <h3>Critical Gaps</h3>
+        <ul>
+          ${sorted.slice(-5).reverse().map(a=>`<li><strong>${a.name}</strong> — avg ${a.avg.toFixed(1)}/10</li>`).join('')}
+          <li>Surrender Struggle is present in ${LEADERS.filter(l=>l.patterns.includes('surrender')).length} of ${LEADERS.length} leaders — the spiritual foundation is not yet settled for most</li>
+          <li>Knowledge & Wisdom is consistently low in reasoning quality — leaders know what they should know but cannot apply or articulate it with depth</li>
+          <li>Several leaders are at burnout risk: serving high, rooted shallow</li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(201,168,76,0.2);padding-top:28px;margin-top:8px">
+      <h3 style="font-size:15px;font-weight:400;color:var(--gold-light);margin-bottom:14px">Recommendations for the Group</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+        <div><p style="font-size:13.5px;color:#c8c2b4;line-height:1.7"><strong style="color:var(--gold-light)">1. Address the root.</strong> Run a series or retreat specifically on surrender — not obedience as behavior but surrender as identity. Until most leaders resolve the God & Purpose tension, everything else is built on unstable ground.</p></div>
+        <div><p style="font-size:13.5px;color:#c8c2b4;line-height:1.7"><strong style="color:var(--gold-light)">2. Equip in the Word.</strong> Knowledge & Wisdom is the weakest non-social area. Consider a structured Bible study habit for the leader group — not just content consumption but interpretation, application, and articulation practice.</p></div>
+        <div><p style="font-size:13.5px;color:#c8c2b4;line-height:1.7"><strong style="color:var(--gold-light)">3. Push outside the bubble.</strong> Social & Community is the lowest-scoring aspect. Build into leader culture a rhythm of intentional engagement with people outside the church — assign accountability for it, not just encouragement.</p></div>
+      </div>
+    </div>
+  `;
+}
+
+// ---- DISCUSSION ----
+function renderDiscussion(){
+  const prompts = [
+    {aspect:"God & Purpose", q:"Most of us scored God & Purpose between 5–7. What does it actually look like in your daily life when God is not fully first? Be specific, not theoretical.", meta:"Good for: full group, sets tone for honest conversation"},
+    {aspect:"Ministry & Service", q:"Is your service right now coming from obedience or obligation? How would you even know the difference?", meta:"Good for: pairs or small groups"},
+    {aspect:"Surrender", q:"What is the one thing you are most reluctant to surrender to God? Why that thing specifically?", meta:"Good for: 1-on-1 or journaling"},
+    {aspect:"Social & Community", q:"Several of us admit we're not being salt and light outside the church. If a non-Christian in your life was watching you for a month, what would they conclude about your faith?", meta:"Good for: full group"},
+    {aspect:"Knowledge & Wisdom", q:"If someone asked you to explain why you believe what you believe — not just what — could you do it confidently? What's one gap you know you have?", meta:"Good for: pairs"},
+    {aspect:"Health & Wellness", q:"Some of us said we 'don't care' about health or that it's not important. Do you think God cares about how you treat your body? Why or why not?", meta:"Good for: full group"},
+    {aspect:"Personal Growth", q:"We all said we know our problems. What is one thing you've known for more than a year that you still haven't changed? What would it take?", meta:"Good for: 1-on-1 or journaling"},
+    {aspect:"Family & Love ones", q:"How is your relationship with the people at home different from your relationships at church? If it's worse at home, what does that tell you?", meta:"Good for: 1-on-1"},
+    {aspect:"Financial & Money", q:"If your spending history from the last 3 months was shown to the group, would it reflect your stated values? Where would the biggest gap be?", meta:"Good for: journaling, optional sharing"},
+    {aspect:"Patterns", q:"Looking at the group's recurring patterns — Surrender Struggle, Shallow Roots, Isolation, Obligation — which one do you think applies most to you, and why?", meta:"Good for: full group, after sharing results"},
+    {aspect:"Burnout Risk", q:"Jun Hong gives 90% of his time to ministry, several others are similar. What is the line between faithful service and unsustainable sacrifice? How do you know when you've crossed it?", meta:"Good for: full group"},
+    {aspect:"Reflection Quality", q:"Some of us left reasons blank or gave very short answers. If you were one of them — what were you avoiding? What would you actually write if you were being fully honest?", meta:"Good for: 1-on-1 with leader"},
+  ];
+
+  let html = `<div class="prompts-grid">`;
+  prompts.forEach(p=>{
+    html += `<div class="prompt-card">
+      <div class="prompt-aspect">${p.aspect}</div>
+      <div class="prompt-q">"${p.q}"</div>
+      <div class="prompt-meta">${p.meta}</div>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById('discussionContent').innerHTML = html;
+}
+
+renderOverview();
+renderRankings();
+renderProfiles();
+renderPatterns();
+renderTeam();
+renderDiscussion();
+</script>
+</body>
+</html>
