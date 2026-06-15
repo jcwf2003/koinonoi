@@ -398,6 +398,7 @@ canvas.trend-canvas{width:100%;height:100%;}
       <button class="nav-btn" onclick="showView('leaderboard')" id="nav-leaderboard">Leaderboard</button>
       <button class="nav-btn" onclick="showView('vdot-calc')" id="nav-vdot">Fitness Calculator</button>
       <button class="nav-btn" onclick="showView('athletes-list')" id="nav-athletes-list">Athletes</button>
+      <button class="nav-btn" onclick="showView('bulk-test')" id="nav-bulk-test" style="display:none">⚡ Bulk Test</button>
       <button class="nav-btn" onclick="exportSquadCSV()" id="nav-export" style="display:none;color:var(--text2)" title="Export all approved test data as CSV">⬇ Export</button>
       <button class="nav-btn" onclick="showView('my-profile')" id="nav-my-profile" style="display:none">My Profile</button>
       <button class="nav-btn" onclick="showView('my-diary')" id="nav-my-diary" style="display:none">My Diary</button>
@@ -464,6 +465,15 @@ canvas.trend-canvas{width:100%;height:100%;}
       </div>
       <div id="diary-lock-status" style="font-size:12px;color:var(--text3);margin-bottom:12px"></div>
       <div id="diary-list"></div>
+    </div>
+
+    <!-- BULK TEST VIEW -->
+    <div class="view" id="view-bulk-test">
+      <div class="page-header">
+        <div class="page-title">⚡ Bulk Test Entry</div>
+        <div style="font-size:12px;color:var(--text2)">Log one test session for the whole squad at once</div>
+      </div>
+      <div id="bulk-test-content"></div>
     </div>
 
     <!-- FITNESS CALCULATOR VIEW -->
@@ -867,6 +877,7 @@ canvas.trend-canvas{width:100%;height:100%;}
         </select>
       </div>
       <div class="form-group"><label class="form-label">RPE (1-10)</label><input type="number" class="form-input" id="di-rpe" min="1" max="10" placeholder="effort"></div>
+      <div class="form-group"><label class="form-label">Duration (mins) <span style="color:var(--text3);font-size:10px">optional</span></label><input type="number" class="form-input" id="di-duration" min="1" max="600" placeholder="e.g. 45"></div>
     </div>
     <div class="form-group" style="grid-column:1/-1"><label class="form-label">Session details</label><textarea class="form-input" id="di-content" rows="4" placeholder="What did you do? How did it feel? Any observations..."></textarea></div>
     <div class="modal-actions">
@@ -1142,13 +1153,15 @@ async function initSupabase(){
 // Pull all tables and assemble into DB.athletes structure
 async function pullFromSupabase(){
   if(!sb)return;
-  const [ath,tests,comps,pbs,achs,diary] = await Promise.all([
+  const [ath,tests,comps,pbs,achs,diary,flags,vdotOvr] = await Promise.all([
     sb.from('athletes').select('*'),
     sb.from('test_results').select('*'),
     sb.from('competitions').select('*'),
     sb.from('personal_bests').select('*'),
     sb.from('achievements').select('*'),
     sb.from('diary_entries').select('*'),
+    sb.from('athlete_flags').select('*').order('started_on',{ascending:false}),
+    sb.from('vdot_source_overrides').select('*'),
   ]);
   if(ath.error)throw ath.error;
 
@@ -1157,13 +1170,15 @@ async function pullFromSupabase(){
     event:r.event, height:r.height, weight:r.weight, rhr:r.rhr, mhr:r.mhr,
     password:r.password, diaryLocked:r.diary_locked, diaryPassword:r.diary_password,
     accountStatus:r.account_status,
-    tests:[], competitions:[], pbs:[], achievements:[], diary:[]
+    tests:[], competitions:[], pbs:[], achievements:[], diary:[], flags:[]
   }));
   const byId = Object.fromEntries(athletes.map(a=>[a.id,a]));
 
   (tests.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.tests.push({
-    id:r.id,date:r.test_date,t400:r.t400,t2400:r.t2400,cmj:r.cmj,sj:r.sj,
-    rhr:r.rhr,mhr:r.mhr,height:r.height,weight:r.weight,custom:r.custom||{},notes:r.notes,status:r.status});});
+    id:r.id, date:r.test_date, t400:r.t400, t2400:r.t2400, cmj:r.cmj, sj:r.sj,
+    rhr:r.rhr, mhr:r.mhr, height:r.height, weight:r.weight,
+    effort:r.effort||'maximal', surface:r.surface||'track', weather:r.weather||'',
+    custom:r.custom||{}, notes:r.notes, status:r.status});});
   (comps.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.competitions.push({
     id:r.id,name:r.name,date:r.comp_date,event:r.event,time:r.result_time,place:r.place,notes:r.notes,status:r.status});});
   (pbs.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.pbs.push({
@@ -1171,7 +1186,15 @@ async function pullFromSupabase(){
   (achs.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.achievements.push({
     id:r.id,title:r.title,icon:r.icon,date:r.ach_date,desc:r.descr,status:r.status});});
   (diary.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.diary.push({
-    id:r.id,date:r.entry_date,type:r.type,mood:r.mood,rpe:r.rpe,content:r.content});});
+    id:r.id,date:r.entry_date,type:r.type,mood:r.mood,rpe:r.rpe,
+    duration:r.duration_min||null,content:r.content});});
+  (flags.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.flags.push({
+    id:r.id,type:r.type,description:r.description,startedOn:r.started_on,endedOn:r.ended_on});});
+
+  // Restore VDOT overrides into in-memory map
+  (vdotOvr.data||[]).forEach(r=>{
+    profileVDOTSource[r.athlete_id]={dist:r.dist_metres,timeSecs:r.time_secs};
+  });
 
   DB.athletes = athletes;
   DB.pendingItems = DB.pendingItems||[];
@@ -1317,6 +1340,7 @@ function launchApp(){
   document.getElementById('btn-add-athlete').style.display=isCoach?'':'none';
   document.getElementById('nav-squad').style.display=isCoach?'':'none';
   document.getElementById('nav-athletes-list').style.display=isCoach?'':'none';
+  document.getElementById('nav-bulk-test').style.display=isCoach?'':'none';
   document.getElementById('nav-export').style.display=isCoach?'':'none';
   document.getElementById('nav-leaderboard').style.display=isPublic?'none':'';
   document.getElementById('nav-my-profile').style.display=(isCoach||isPublic)?'none':'';
@@ -1352,7 +1376,8 @@ function showView(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const idMap={'squad':'nav-squad','vdot-calc':'nav-vdot','athletes-list':'nav-athletes-list','my-profile':'nav-my-profile','my-diary':'nav-my-diary','leaderboard':'nav-leaderboard'};
+  const idMap={'squad':'nav-squad','vdot-calc':'nav-vdot','athletes-list':'nav-athletes-list','my-profile':'nav-my-profile','my-diary':'nav-my-diary','leaderboard':'nav-leaderboard','bulk-test':'nav-bulk-test'};
+  if(name==='bulk-test')renderBulkTest();
   if(idMap[name])document.getElementById(idMap[name])?.classList.add('active');
   if(name==='athletes-list')renderAthletesList();
   if(name==='squad')renderSquad();
@@ -1615,8 +1640,8 @@ function renderSquadStats(){
   const males=all.filter(a=>a.gender==='M');
   const females=all.filter(a=>a.gender==='F');
 
-  // Helper: get latest test value for athlete
-  const latestTest=a=>approvedTests(a).sort((x,y)=>y.date.localeCompare(x.date))[0];
+  // Helper: get latest quality test for athlete (maximal/near-maximal only for fitness metrics)
+  const latestTest=a=>qualityTests(a).sort((x,y)=>y.date.localeCompare(x.date))[0];
 
   // Ages
   const ages=all.map(a=>calcAge(a.dob)).filter(x=>typeof x==='number');
@@ -2111,11 +2136,14 @@ function applyVDOTSourceOverride(id){
   if(!timeSecs){return;}
   profileVDOTSource[id]={dist,timeSecs};
   renderProfile(id);
+  // Persist to DB (upsert via delete+insert since Supabase anon doesn't have upsert on primary key easily)
+  sb&&sb.from('vdot_source_overrides').upsert({athlete_id:id,dist_metres:dist,time_secs:timeSecs},{onConflict:'athlete_id'});
 }
 
 function clearVDOTSourceOverride(id){
   delete profileVDOTSource[id];
   renderProfile(id);
+  sb&&sb.from('vdot_source_overrides').delete().eq('athlete_id',id);
 }
 
 function renderProfile(id,targetEl='profile-content'){
@@ -2455,7 +2483,8 @@ function renderProfile(id,targetEl='profile-content'){
     ${(()=>{
       const diaryWithRPE=(a.diary||[]).filter(d=>d.rpe&&d.date&&d.type!=='rest').sort((x,y)=>x.date.localeCompare(y.date));
       if(diaryWithRPE.length<3)return'';
-      // Group into weeks (Mon–Sun), last 12 weeks
+      const hasDuration=diaryWithRPE.some(d=>d.duration);
+      // Group into weeks, last 12 weeks
       const weeks={};
       const cutoff=new Date();cutoff.setDate(cutoff.getDate()-84);
       diaryWithRPE.forEach(d=>{
@@ -2464,37 +2493,39 @@ function renderProfile(id,targetEl='profile-content'){
         const day=dt.getDay();
         const mon=new Date(dt);mon.setDate(dt.getDate()-(day===0?6:day-1));
         const wk=mon.toISOString().split('T')[0];
-        if(!weeks[wk])weeks[wk]={sessions:0,rpeSum:0,types:[]};
+        if(!weeks[wk])weeks[wk]={sessions:0,rpeSum:0,loadSum:0,types:[]};
+        const rpe=parseInt(d.rpe)||0;
+        const dur=d.duration||null;
         weeks[wk].sessions++;
-        weeks[wk].rpeSum+=parseInt(d.rpe)||0;
+        weeks[wk].rpeSum+=rpe;
+        weeks[wk].loadSum+=dur?rpe*dur:rpe*30; // fallback: assume 30min if no duration
         weeks[wk].types.push(d.type);
       });
       const wkKeys=Object.keys(weeks).sort().slice(-12);
       if(wkKeys.length<2)return'';
-      const avgRPEs=wkKeys.map(w=>weeks[w].rpeSum/weeks[w].sessions);
+      const useLoad=hasDuration; // if any entry has duration, show load units; else show avg RPE
+      const vals=wkKeys.map(w=>useLoad?weeks[w].loadSum:weeks[w].rpeSum/weeks[w].sessions);
       const sessionsPerWk=wkKeys.map(w=>weeks[w].sessions);
-      const maxRPE=Math.max(...avgRPEs,1);
-      const maxSess=Math.max(...sessionsPerWk,1);
-      const barW=Math.max(16,Math.floor(280/wkKeys.length)-4);
+      const maxVal=Math.max(...vals,1);
       const bars=wkKeys.map((wk,i)=>{
-        const rpe=avgRPEs[i];const sess=sessionsPerWk[i];
-        const h=Math.round((rpe/maxRPE)*60);
-        const color=rpe>=8?'var(--red)':rpe>=6?'var(--orange)':rpe>=4?'var(--accent)':'var(--blue)';
-        const label=wk.slice(5);// MM-DD
-        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:${barW}px">
-          <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono)">${rpe.toFixed(1)}</div>
-          <div style="width:${barW}px;height:${h}px;background:${color};border-radius:3px 3px 0 0;min-height:3px" title="Week ${label}: ${sess} session${sess!==1?'s':''}, avg RPE ${rpe.toFixed(1)}"></div>
+        const val=vals[i];const sess=sessionsPerWk[i];
+        const rpeAvg=weeks[wk].rpeSum/weeks[wk].sessions;
+        const h=Math.max(3,Math.round((val/maxVal)*60));
+        const color=rpeAvg>=8?'var(--red)':rpeAvg>=6?'var(--orange)':rpeAvg>=4?'var(--accent)':'var(--blue)';
+        const label=wk.slice(5);
+        const tip=useLoad?`${val} AU · ${sess} session${sess!==1?'s':''} · avg RPE ${rpeAvg.toFixed(1)}`:`avg RPE ${val.toFixed(1)} · ${sess} session${sess!==1?'s':''}`;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:18px">
+          <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono)">${useLoad?Math.round(val):val.toFixed(1)}</div>
+          <div style="width:100%;max-width:28px;height:${h}px;background:${color};border-radius:3px 3px 0 0;min-height:3px" title="${tip}"></div>
           <div style="font-size:8px;color:var(--text3);font-family:var(--font-mono);transform:rotate(-30deg);transform-origin:top left;white-space:nowrap;margin-top:4px;margin-left:4px">${label}</div>
         </div>`;
       }).join('');
+      const metric=useLoad?'sRPE load (AU = min × RPE)':'avg session RPE';
       return `<div class="section-card">
-        <div class="section-title">Training Load <span style="font-size:11px;font-weight:400;color:var(--text3)">from diary RPE · last 12 weeks</span></div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Average session RPE per week (bar height). Sessions logged from diary entries with RPE recorded.</div>
-        <div style="display:flex;align-items:flex-end;gap:2px;padding-bottom:20px;min-height:80px;overflow-x:auto">${bars}</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
-          <div style="font-size:11px;color:var(--text2)">🟦 Low (RPE &lt;4) &nbsp; 🟩 Moderate (4–6) &nbsp; 🟧 High (6–8) &nbsp; 🟥 Very high (&gt;8)</div>
-        </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:6px">⚠ Diary RPE only captures subjective effort, not volume. Add duration to diary entries for full sRPE-TRIMP load calculation.</div>
+        <div class="section-title">Training Load <span style="font-size:11px;font-weight:400;color:var(--text3)">from diary · last 12 weeks · ${metric}</span></div>
+        <div style="display:flex;align-items:flex-end;gap:2px;padding-bottom:22px;min-height:80px;overflow-x:auto">${bars}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">🟦 Low RPE &nbsp; 🟩 Moderate &nbsp; 🟧 High &nbsp; 🟥 Very high</div>
+        ${!hasDuration?`<div style="font-size:10px;color:var(--text3);margin-top:5px">⚠ No session durations logged — bars show avg RPE only, not true load. Add duration (mins) to diary entries for sRPE × duration load units.</div>`:''}
       </div>`;
     })()}
 
@@ -2604,14 +2635,13 @@ function openAddDiary(){
 function saveDiary(){
   const aid=currentUser?.type==='athlete'?currentUser.athleteId:currentAthleteId;
   const a=DB.athletes.find(x=>x.id===aid);if(!a)return;
-  const entry={id:'d'+Date.now(),date:document.getElementById('di-date').value,type:document.getElementById('di-type').value,mood:document.getElementById('di-mood').value,rpe:document.getElementById('di-rpe').value||null,content:document.getElementById('di-content').value.trim()};
+  const entry={id:'d'+Date.now(),date:document.getElementById('di-date').value,type:document.getElementById('di-type').value,mood:document.getElementById('di-mood').value,rpe:document.getElementById('di-rpe').value||null,duration:parseInt(document.getElementById('di-duration')?.value)||null,content:document.getElementById('di-content').value.trim()};
   if(!entry.content){alert('Please add some content.');return;}
   a.diary=a.diary||[];a.diary.push(entry);saveDB();closeModal('modal-add-diary');
   document.getElementById('di-content').value='';
-  // Remove filter bar so it rebuilds with correct aid
   const fb=document.getElementById('diary-filter-bar');if(fb)fb.remove();
   renderDiary(aid);
-  sbInsert('diary_entries',{athlete_id:aid,entry_date:entry.date,type:entry.type,mood:entry.mood,rpe:entry.rpe?parseInt(entry.rpe):null,content:entry.content}).then(nid=>{if(nid){entry.id=nid;saveDB();}});
+  sbInsert('diary_entries',{athlete_id:aid,entry_date:entry.date,type:entry.type,mood:entry.mood,rpe:entry.rpe?parseInt(entry.rpe):null,duration_min:entry.duration||null,content:entry.content}).then(nid=>{if(nid){entry.id=nid;saveDB();}});
 }
 
 function renderTimepointCompare(id){
@@ -2836,6 +2866,170 @@ function clearDiaryFilters(aid){
 function diaryTypeColor(type){
   const map={run:'var(--accent)',strength:'var(--orange)',race:'var(--purple)',rest:'var(--blue)',other:'var(--border2)'};
   return map[type]||'var(--border2)';
+}
+
+// ─── BULK TEST ENTRY ──────────────────────────────────────────
+function renderBulkTest(){
+  const el=document.getElementById('bulk-test-content');if(!el)return;
+  const athletes=DB.athletes.filter(a=>(a.accountStatus||'approved')==='approved').sort((a,b)=>a.lname.localeCompare(b.lname));
+  if(!athletes.length){el.innerHTML='<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No approved athletes yet.</div></div>';return;}
+
+  el.innerHTML=`
+    <div class="section-card" style="margin-bottom:16px">
+      <div class="section-title">Session Setup</div>
+      <div class="form-grid-2" style="margin-bottom:0">
+        <div class="form-group">
+          <label class="form-label">Test date</label>
+          <input type="date" class="form-input" id="bt-date" value="${new Date().toISOString().split('T')[0]}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Effort quality</label>
+          <select class="form-input" id="bt-effort">
+            <option value="maximal">Maximal — all-out</option>
+            <option value="near_maximal">Near-maximal — 95%+</option>
+            <option value="submaximal">Submaximal</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Surface</label>
+          <select class="form-input" id="bt-surface">
+            <option value="track">Athletics track</option>
+            <option value="road">Road / footpath</option>
+            <option value="grass">Grass</option>
+            <option value="treadmill">Treadmill</option>
+            <option value="trail">Trail / offroad</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weather</label>
+          <select class="form-input" id="bt-weather">
+            <option value="">— not recorded</option>
+            <option value="ideal">Ideal (mild, calm)</option>
+            <option value="warm">Warm (&gt;25°C)</option>
+            <option value="hot">Hot (&gt;30°C)</option>
+            <option value="cold">Cold (&lt;10°C)</option>
+            <option value="windy">Windy</option>
+            <option value="rain">Rain</option>
+            <option value="indoor">Indoor</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">Athlete Results
+        <span style="font-size:11px;font-weight:400;color:var(--text3)">Leave blank to skip an athlete · times as mm:ss</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:680px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border)">
+            <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;white-space:nowrap">Athlete</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">400m</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">2.4km</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">CMJ cm</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">SJ cm</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">Ht cm</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">Wt kg</th>
+            <th style="text-align:center;padding:8px 6px;font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${athletes.map(a=>{
+            const latest=qualityTests(a).sort((x,y)=>y.date.localeCompare(x.date))[0];
+            const prevHint=latest?`<div style="font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--font-mono)">${latest.date}: ${latest.t2400?secsToMMSS(latest.t2400):'—'}</div>`:
+              `<div style="font-size:9px;color:var(--text3);margin-top:2px">No prior test</div>`;
+            const activeFlag=(a.flags||[]).find(f=>!f.endedOn);
+            return `<tr style="border-bottom:1px solid var(--border)" id="bt-row-${a.id}">
+              <td style="padding:10px 10px;white-space:nowrap">
+                <div style="font-weight:500;font-size:13px">${a.fname} ${a.lname}${activeFlag?` <span title="${activeFlag.type}" style="font-size:12px">${activeFlag.type==='injury'?'🤕':'🤒'}</span>`:''}</div>
+                <div style="font-size:11px;color:var(--text2)">${a.event||'—'} · ${a.gender==='M'?'♂':'♀'}</div>
+                ${prevHint}
+              </td>
+              <td style="padding:6px"><input type="text" class="form-input" id="bt-400-${a.id}" placeholder="mm:ss" style="width:80px;padding:6px 8px;text-align:center;font-family:var(--font-mono)"></td>
+              <td style="padding:6px"><input type="text" class="form-input" id="bt-2400-${a.id}" placeholder="mm:ss" style="width:86px;padding:6px 8px;text-align:center;font-family:var(--font-mono)"></td>
+              <td style="padding:6px"><input type="number" class="form-input" id="bt-cmj-${a.id}" placeholder="cm" min="5" max="120" style="width:68px;padding:6px 8px;text-align:center"></td>
+              <td style="padding:6px"><input type="number" class="form-input" id="bt-sj-${a.id}" placeholder="cm" min="5" max="120" style="width:68px;padding:6px 8px;text-align:center"></td>
+              <td style="padding:6px"><input type="number" class="form-input" id="bt-ht-${a.id}" placeholder="cm" style="width:68px;padding:6px 8px;text-align:center"></td>
+              <td style="padding:6px"><input type="number" class="form-input" id="bt-wt-${a.id}" placeholder="kg" style="width:68px;padding:6px 8px;text-align:center"></td>
+              <td style="padding:6px"><input type="text" class="form-input" id="bt-notes-${a.id}" placeholder="optional" style="width:120px;padding:6px 8px;font-size:12px"></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>
+
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn-save" onclick="saveBulkTest()" style="padding:10px 24px">✓ Save all results</button>
+        <button class="btn-cancel" onclick="clearBulkTest()">Clear all</button>
+        <span id="bt-status" style="font-size:12px;color:var(--text2)"></span>
+      </div>
+    </div>`;
+}
+
+function clearBulkTest(){
+  const athletes=DB.athletes.filter(a=>(a.accountStatus||'approved')==='approved');
+  athletes.forEach(a=>{
+    ['400','2400','cmj','sj','ht','wt','notes'].forEach(f=>{
+      const el=document.getElementById(`bt-${f}-${a.id}`);if(el)el.value='';
+    });
+  });
+  document.getElementById('bt-status').textContent='Cleared.';
+}
+
+function saveBulkTest(){
+  const parseTime=v=>{if(!v)return null;v=v.trim();if(v.includes(':')){const p=v.split(':');return parseInt(p[0])*60+(parseInt(p[1])||0);}return parseInt(v)||null;};
+  const date=document.getElementById('bt-date')?.value;
+  const effort=document.getElementById('bt-effort')?.value||'maximal';
+  const surface=document.getElementById('bt-surface')?.value||'track';
+  const weather=document.getElementById('bt-weather')?.value||'';
+  if(!date){alert('Set a test date first.');return;}
+
+  const athletes=DB.athletes.filter(a=>(a.accountStatus||'approved')==='approved');
+  const toSave=[];
+
+  athletes.forEach(a=>{
+    const t400=parseTime(document.getElementById(`bt-400-${a.id}`)?.value);
+    const t2400=parseTime(document.getElementById(`bt-2400-${a.id}`)?.value);
+    const cmj=parseFloat(document.getElementById(`bt-cmj-${a.id}`)?.value)||null;
+    const sj=parseFloat(document.getElementById(`bt-sj-${a.id}`)?.value)||null;
+    const height=parseFloat(document.getElementById(`bt-ht-${a.id}`)?.value)||null;
+    const weight=parseFloat(document.getElementById(`bt-wt-${a.id}`)?.value)||null;
+    const notes=(document.getElementById(`bt-notes-${a.id}`)?.value||'').trim();
+    if(!t400&&!t2400&&!cmj&&!sj&&!height&&!weight)return; // skip empty rows
+    toSave.push({athlete:a,t400,t2400,cmj,sj,height,weight,notes,effort,surface,weather,date});
+  });
+
+  if(!toSave.length){alert('No results entered. Fill in at least one field per athlete.');return;}
+
+  // Duplicate check
+  const dupes=toSave.filter(({athlete:a})=>(a.tests||[]).find(t=>t.date===date&&t.status==='approved'));
+  if(dupes.length){
+    const names=dupes.map(d=>`${d.athlete.fname} ${d.athlete.lname}`).join(', ');
+    if(!confirm(`⚠ ${dupes.length} athlete(s) already have a test on ${date}:\n${names}\n\nLog anyway?`))return;
+  }
+
+  const statusEl=document.getElementById('bt-status');
+  statusEl.textContent=`Saving ${toSave.length} result(s)…`;
+
+  let saved=0;
+  toSave.forEach(({athlete:a,t400,t2400,cmj,sj,height,weight,notes,effort,surface,weather,date})=>{
+    const test={id:'t'+Date.now()+Math.random().toString(36).slice(2,6),
+      date,t400,t2400,cmj,sj,height,weight,notes,effort,surface,weather,
+      rhr:null,mhr:null,status:'approved'};
+    a.tests=a.tests||[];a.tests.push(test);
+    sbInsert('test_results',{
+      athlete_id:a.id,test_date:date,t400,t2400,cmj,sj,height,weight,notes,
+      effort,surface,weather,rhr:null,mhr:null,status:'approved'
+    }).then(newId=>{if(newId)test.id=newId;saved++;});
+  });
+
+  saveDB();
+  clearBulkTest();
+  statusEl.innerHTML=`<span style="color:var(--accent)">✓ ${toSave.length} result(s) saved for ${date}</span>`;
+  setTimeout(()=>{renderBulkTest();},400);
 }
 
 // ─── CSV EXPORT ───────────────────────────────────────────────
@@ -3430,7 +3624,7 @@ function updateCalcDist(){
   document.getElementById('calc-custom-dist-group').style.display=v==='custom'?'block':'none';
   const bigDist=v==='custom'||parseInt(v)>=10000;
   document.getElementById('calc-hrs-group').style.display=bigDist?'block':'none';
-  document.getElementById('calc-vo2max-box').style.display=v==='2400'?'block':'none';
+  document.getElementById('calc-vo2max-box').style.display='block'; // show for all distances
   calcVDOTStandalone();
 }
 function calcVDOTStandalone(){
