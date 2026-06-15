@@ -398,6 +398,7 @@ canvas.trend-canvas{width:100%;height:100%;}
       <button class="nav-btn" onclick="showView('leaderboard')" id="nav-leaderboard">Leaderboard</button>
       <button class="nav-btn" onclick="showView('vdot-calc')" id="nav-vdot">Fitness Calculator</button>
       <button class="nav-btn" onclick="showView('athletes-list')" id="nav-athletes-list">Athletes</button>
+      <button class="nav-btn" onclick="exportSquadCSV()" id="nav-export" style="display:none;color:var(--text2)" title="Export all approved test data as CSV">⬇ Export</button>
       <button class="nav-btn" onclick="showView('my-profile')" id="nav-my-profile" style="display:none">My Profile</button>
       <button class="nav-btn" onclick="showView('my-diary')" id="nav-my-diary" style="display:none">My Diary</button>
     </div>
@@ -426,7 +427,7 @@ canvas.trend-canvas{width:100%;height:100%;}
 
       <!-- RANKING -->
       <div class="section-card" id="squad-ranking-card" style="margin-bottom:16px">
-        <div class="section-title">MAS Ranking
+        <div class="section-title">Aerobic Speed Ranking
           <div style="display:flex;gap:6px;align-items:center">
             <select id="ranking-gender" class="form-select" style="padding:4px 8px;width:auto;font-size:12px" onchange="renderSquad(document.getElementById('squad-search').value)">
               <option value="all">All</option>
@@ -469,7 +470,7 @@ canvas.trend-canvas{width:100%;height:100%;}
     <div class="view" id="view-vdot-calc">
       <div class="page-header"><div class="page-title">Fitness Calculator</div></div>
       <div class="section-card">
-        <div class="section-title">VDOT / MAS — Calculate from any performance</div>
+        <div class="section-title">VDOT / Aerobic Speed — Calculate from any performance</div>
         <div class="vdot-inputs">
           <div class="form-group" style="margin:0">
             <label class="form-label">Distance</label>
@@ -511,7 +512,7 @@ canvas.trend-canvas{width:100%;height:100%;}
               <div class="vdot-number" id="calc-vdot-num">—</div>
             </div>
             <div class="vdot-result">
-              <div class="vdot-label">MAS (km/h)</div>
+              <div class="vdot-label">Aero Speed (km/h)<span style="font-size:9px;color:var(--text3);display:block;margin-top:2px">avg 2.4km speed · vV̇O₂max proxy</span></div>
               <div class="vdot-number" id="calc-mas-num" style="color:var(--blue)">—</div>
             </div>
             <div class="vdot-result" id="calc-vo2max-box" style="display:none">
@@ -568,7 +569,7 @@ canvas.trend-canvas{width:100%;height:100%;}
         <select class="form-select" style="width:130px;padding:8px 12px" id="alist-sort" onchange="renderAthletesList()">
           <option value="name">Sort: Name</option>
           <option value="age">Sort: Age</option>
-          <option value="mas">Sort: MAS</option>
+          <option value="mas">Sort: Aero Speed</option>
           <option value="tests">Sort: Tests</option>
         </select>
         <select class="form-select" style="width:130px;padding:8px 12px" id="alist-view" onchange="renderAthletesList()">
@@ -595,7 +596,7 @@ canvas.trend-canvas{width:100%;height:100%;}
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
         <select class="form-select" id="lb-metric" style="width:200px;padding:8px 12px" onchange="renderLeaderboard()">
           <optgroup label="Running Performance">
-            <option value="mas">MAS (km/h)</option>
+            <option value="mas">Aero Speed (km/h)</option>
             <option value="vdot">VDOT</option>
             <option value="t400">400m Time</option>
             <option value="t2400">2.4km Time</option>
@@ -906,7 +907,36 @@ canvas.trend-canvas{width:100%;height:100%;}
   </div>
 </div>
 
-<!-- EDIT TEST MODAL -->
+<!-- ATHLETE FLAG MODAL -->
+<div class="modal-overlay" id="modal-add-flag">
+  <div class="modal">
+    <div class="modal-title">Log Interruption / Flag</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:16px;background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border)">
+      Use this to record any reason a training block or test result may be unreliable: injury, illness, personal circumstances, or confirmed overtraining. These flags appear on the athlete profile alongside test results so declines can be explained.
+    </div>
+    <input type="hidden" id="flg-aid">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-input" id="flg-type">
+          <option value="injury">Injury</option>
+          <option value="illness">Illness</option>
+          <option value="overtraining">Overtraining</option>
+          <option value="personal">Personal / other</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Start date</label><input type="date" class="form-input" id="flg-start"></div>
+      <div class="form-group"><label class="form-label">End date <span style="color:var(--text3);font-size:10px">(leave blank if ongoing)</span></label><input type="date" class="form-input" id="flg-end"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" id="flg-desc" placeholder="e.g. Left hamstring strain, grade 1"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-add-flag')">Cancel</button>
+      <button class="btn-save" onclick="saveFlag()">Save flag</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-edit-test">
   <div class="modal">
     <div class="modal-title">Edit Test Result</div>
@@ -1287,6 +1317,7 @@ function launchApp(){
   document.getElementById('btn-add-athlete').style.display=isCoach?'':'none';
   document.getElementById('nav-squad').style.display=isCoach?'':'none';
   document.getElementById('nav-athletes-list').style.display=isCoach?'':'none';
+  document.getElementById('nav-export').style.display=isCoach?'':'none';
   document.getElementById('nav-leaderboard').style.display=isPublic?'none':'';
   document.getElementById('nav-my-profile').style.display=(isCoach||isPublic)?'none':'';
   document.getElementById('nav-my-diary').style.display=(isCoach||isPublic)?'none':'';
@@ -1544,11 +1575,12 @@ function renderSquad(search=''){
     const age=calcAge(a.dob);
     const masHtml=latest?.t2400?`<span class="ac-stat-val">${calcMAS2400(latest.t2400).toFixed(1)}</span>`:'<span class="ac-stat-val muted">—</span>';
     const vdotHtml=latest?.t2400?`<span class="ac-stat-val">${calcVDOT(2400,latest.t2400).toFixed(1)}</span>`:'<span class="ac-stat-val muted">—</span>';
+    const activeFlags=(a.flags||[]).filter(f=>!f.endedOn);
     return `<div class="athlete-card" onclick="openProfile('${a.id}')">
-      <div class="ac-name">${a.fname} ${a.lname}</div>
+      <div class="ac-name">${a.fname} ${a.lname}${activeFlags.length?` <span title="${activeFlags.map(f=>f.type).join(', ')}" style="font-size:13px;vertical-align:middle">${activeFlags.some(f=>f.type==='injury')?'🤕':activeFlags.some(f=>f.type==='illness')?'🤒':'🔶'}</span>`:''}</div>
       <div class="ac-meta">${age}y · ${a.gender==='M'?'♂':'♀'} · ${a.event||'—'} ${latest?'· <span class="tag tag-green">'+latest.date+'</span>':'<span class="no-test-badge">No test yet</span>'}</div>
       <div class="ac-stats">
-        <div class="ac-stat"><div class="ac-stat-label">MAS km/h</div>${masHtml}</div>
+        <div class="ac-stat"><div class="ac-stat-label" title="Average 2.4km run speed — vV̇O₂max proxy">Aero Speed</div>${masHtml}</div>
         <div class="ac-stat"><div class="ac-stat-label">VDOT</div>${vdotHtml}</div>
         <div class="ac-stat"><div class="ac-stat-label">CMJ cm</div><span class="ac-stat-val ${latest?.cmj?'':'muted'}">${latest?.cmj||'—'}</span></div>
         <div class="ac-stat"><div class="ac-stat-label">Tests</div><span class="ac-stat-val">${tests.length}</span></div>
@@ -1655,7 +1687,7 @@ function renderSquadStats(){
     </div>
 
     <div class="squad-stat-chip">
-      <div class="squad-stat-label">Avg Squad MAS (±SD)</div>
+      <div class="squad-stat-label" title="Average 2.4km run speed across the squad — used as a vV̇O₂max proxy, not a strict progressive MAS test">Avg Aero Speed (±SD)</div>
       <div class="squad-stat-val" style="font-size:18px">${masArr.length?statStr(masArr,' km/h'):'—'}</div>
     </div>
 
@@ -1675,7 +1707,7 @@ function renderSquadStats(){
 
     <!-- ROW 3: MAS distribution -->
     ${masArr.length>=3?`
-    <div style="grid-column:1/-1;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;font-family:var(--font-mono);padding:12px 0 6px">MAS Distribution — Squad Spread (latest test, maximal only)</div>
+    <div style="grid-column:1/-1;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;font-family:var(--font-mono);padding:12px 0 6px">Aerobic Speed Distribution — Squad Spread <span style="text-transform:none;font-size:9px">(avg 2.4km speed · maximal efforts only · not a progressive MAS test)</span></div>
     <div style="grid-column:1/-1">
       <canvas id="squad-mas-dist" height="54" style="width:100%;display:block"></canvas>
       <div id="squad-mas-dist-labels" style="display:flex;justify-content:space-between;font-size:10px;font-family:var(--font-mono);color:var(--text3);margin-top:2px;padding:0 2px"></div>
@@ -1758,7 +1790,7 @@ function renderRanking(search=''){
     return {a,mas:t?.t2400?calcMAS2400(t.t2400):null,vdot:t?.t2400?calcVDOT(2400,t.t2400):null};
   }).filter(x=>x.mas).sort((x,y)=>y.mas-x.mas);
   if(!ranked.length){rd.innerHTML='<div style="color:var(--text3);font-size:13px">No test data yet.</div>';return;}
-  rd.innerHTML=`<table class="ranking-table"><thead><tr><th>#</th><th>Athlete</th><th>Gender</th><th>MAS (km/h)</th><th>VDOT</th><th>Est. VO₂max</th></tr></thead><tbody>`+
+  rd.innerHTML=`<table class="ranking-table"><thead><tr><th>#</th><th>Athlete</th><th>Gender</th><th title="Average speed of the 2.4km run, used as a vV̇O₂max proxy. Not equivalent to a progressive MAS test (e.g. 30-15 IFT).">Aero Speed (km/h)</th><th>VDOT</th><th>Est. VO₂max</th></tr></thead><tbody>`+
     ranked.map((r,i)=>`<tr>
       <td class="rank-num">${i+1}</td>
       <td class="rank-name" onclick="openProfile('${r.a.id}')">${r.a.fname} ${r.a.lname}</td>
@@ -1802,8 +1834,14 @@ function renderApprovalQueue(){
   if(!pending.length&&!pendingAccounts.length){container.innerHTML='';return;}
   if(!pending.length){container.innerHTML=accountsHTML;return;}
   container.innerHTML=accountsHTML+`<div class="approval-queue">
-    <div class="approval-title">⏳ Pending Coach Approval
-      <span style="background:rgba(255,159,67,0.2);color:var(--orange);border-radius:10px;padding:1px 8px;font-size:11px;margin-left:6px">${pending.length}</span>
+    <div class="approval-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>⏳ Pending Coach Approval
+        <span style="background:rgba(255,159,67,0.2);color:var(--orange);border-radius:10px;padding:1px 8px;font-size:11px;margin-left:6px">${pending.length}</span>
+      </span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-sm" style="font-size:11px;padding:4px 10px" onclick="bulkApproveAll()">✓ Approve all (${pending.length})</button>
+        <button class="btn-sm" style="font-size:11px;padding:4px 10px;color:var(--red);border-color:rgba(255,94,108,0.3)" onclick="bulkRejectAll()">✕ Reject all</button>
+      </div>
     </div>
     ${pending.map((item,idx)=>{
       const a=DB.athletes.find(x=>x.id===item.athleteId);
@@ -1819,7 +1857,7 @@ function renderApprovalQueue(){
           <div class="review-field"><span class="review-label">Date</span><span class="review-val">${d.date||'—'}</span></div>
           ${d.t400?`<div class="review-field"><span class="review-label">400m</span><span class="review-val review-mono">${secsToMMSS(d.t400)}</span></div>`:''}
           ${d.t2400?`<div class="review-field"><span class="review-label">2.4km</span><span class="review-val review-mono">${secsToMMSS(d.t2400)}</span></div>`:''}
-          ${d.t2400?`<div class="review-field"><span class="review-label">MAS</span><span class="review-val review-mono" style="color:var(--accent)">${calcMAS2400(d.t2400).toFixed(2)} km/h</span></div>`:''}
+          ${d.t2400?`<div class="review-field"><span class="review-label" title="Average 2.4km run speed">Aero Speed</span><span class="review-val review-mono" style="color:var(--accent)">${calcMAS2400(d.t2400).toFixed(2)} km/h</span></div>`:''}
           ${d.t2400?`<div class="review-field"><span class="review-label">VDOT</span><span class="review-val review-mono" style="color:var(--blue)">${calcVDOT(2400,d.t2400).toFixed(1)}</span></div>`:''}
           ${d.cmj?`<div class="review-field"><span class="review-label">CMJ</span><span class="review-val review-mono">${d.cmj} cm</span></div>`:''}
           ${d.sj?`<div class="review-field"><span class="review-label">SJ</span><span class="review-val review-mono">${d.sj} cm</span></div>`:''}
@@ -1988,6 +2026,25 @@ function saveReviewEdit(idx,type){
   approveItem(idx);
 }
 
+function bulkApproveAll(){
+  const pending=[...(DB.pendingItems||[])];
+  if(!pending.length)return;
+  if(!confirm(`Approve all ${pending.length} pending submission(s)?`))return;
+  // Approve in reverse order so splice indices stay valid
+  for(let i=pending.length-1;i>=0;i--){
+    // Re-find in the live array each time (approveItem splices)
+    const live=DB.pendingItems;
+    const idx=live.findIndex(x=>x===pending[i]);
+    if(idx>=0)approveItem(idx);
+  }
+}
+function bulkRejectAll(){
+  if(!DB.pendingItems?.length)return;
+  if(!confirm(`Reject and discard all ${DB.pendingItems.length} pending submission(s)?`))return;
+  DB.pendingItems=[];
+  saveDB();renderSquad();
+}
+
 function approveItem(idx){
   const item=DB.pendingItems[idx];
   const a=DB.athletes.find(x=>x.id===item.athleteId);
@@ -2139,14 +2196,14 @@ function renderProfile(id,targetEl='profile-content'){
         <div class="detail-chip"><div class="detail-chip-label">Resting HR</div><div class="detail-chip-val">${rhr}<span style="font-size:11px;color:var(--text3)"> bpm</span></div></div>
         <div class="detail-chip"><div class="detail-chip-label">Max HR</div><div class="detail-chip-val">${mhr}<span style="font-size:11px;color:var(--text3)"> bpm</span></div></div>
         ${vo2max?`<div class="detail-chip"><div class="detail-chip-label" title="Estimated from a running time trial — not a lab measurement">Est. VO₂max</div><div class="detail-chip-val" style="color:var(--purple)">${vo2max.toFixed(1)}<span style="font-size:11px;color:var(--text3)"> ml/kg/min</span></div></div>`:''}
-        ${mas?`<div class="detail-chip"><div class="detail-chip-label">MAS</div><div class="detail-chip-val" style="color:var(--accent)">${mas.toFixed(1)}<span style="font-size:11px;color:var(--text3)"> km/h</span></div></div>`:''}
+        ${mas?`<div class="detail-chip"><div class="detail-chip-label" title="Average speed of the 2.4km run (or VDOT-derived). Used as vV̇O₂max proxy. A progressive test (30-15 IFT) gives a more accurate value.">Aero Speed</div><div class="detail-chip-val" style="color:var(--accent)">${mas.toFixed(1)}<span style="font-size:11px;color:var(--text3)"> km/h</span></div></div>`:''}
         ${vdot?`<div class="detail-chip"><div class="detail-chip-label">VDOT</div><div class="detail-chip-val" style="color:var(--blue)">${vdot.toFixed(1)}</div></div>`:''}
       </div>
 
       <!-- VDOT SOURCE SELECTOR -->
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono);margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span>VDOT / MAS / Intensity Source:</span>
+          <span>VDOT / Aerobic Speed Source:</span>
           <span style="color:var(--accent);font-weight:600">${vdotSourceLabel}</span>
           ${curOverride?`<button class="btn-sm" style="font-size:10px;padding:3px 8px" onclick="clearVDOTSourceOverride('${id}')">↺ Reset to default</button>`:''}
         </div>
@@ -2176,9 +2233,57 @@ function renderProfile(id,targetEl='profile-content'){
           </div>
           <button class="btn-accent" style="padding:7px 16px;font-size:12px" onclick="applyVDOTSourceOverride('${id}')">Apply</button>
         </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px">Race predictions, pace zones, HR zones and MAS zones all update based on the source selected above.</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Race predictions, pace zones, HR zones and intensity zones all update based on the source selected above. Note: "Aerobic Speed" is the average 2.4km run speed — a vV̇O₂max proxy, not a strict MAS test.</div>
       </div>
     </div>
+
+    <!-- ATHLETE FLAGS (injury/illness) -->
+    ${(()=>{
+      const flags=a.flags||[];
+      const active=flags.filter(f=>!f.endedOn);
+      const past=flags.filter(f=>f.endedOn);
+      const typeIcon={injury:'🤕',illness:'🤒',overtraining:'😵',personal:'🔶',unknown:'❓'};
+      const typeColor={injury:'var(--red)',illness:'var(--orange)',overtraining:'var(--purple)',personal:'var(--blue)',unknown:'var(--text3)'};
+      if(!flags.length&&!isCoach)return'';
+      return `<div class="section-card">
+        <div class="section-title">Training Interruptions
+          ${active.length?`<span class="pending-badge" style="background:rgba(255,94,108,0.12);color:var(--red);border-color:rgba(255,94,108,0.3)">${active.length} active</span>`:''}
+          ${isCoach?`<button class="btn-edit" onclick="openAddFlag('${id}')">+ Log flag</button>`:''}
+        </div>
+        ${active.length?`
+          <div style="margin-bottom:12px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono);margin-bottom:8px">Active — may affect current test data</div>
+            ${active.map(f=>`
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,94,108,0.06);border:1px solid rgba(255,94,108,0.2);border-radius:8px;margin-bottom:6px;flex-wrap:wrap">
+                <span style="font-size:18px">${typeIcon[f.type]||'❓'}</span>
+                <div style="flex:1">
+                  <div style="font-weight:600;font-size:13px;color:${typeColor[f.type]||'var(--text)'}">${f.type.charAt(0).toUpperCase()+f.type.slice(1)}</div>
+                  ${f.description?`<div style="font-size:12px;color:var(--text2)">${f.description}</div>`:''}
+                  <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px">From ${f.startedOn} · ongoing</div>
+                </div>
+                ${isCoach?`<div style="display:flex;gap:6px">
+                  <button class="btn-sm" style="font-size:11px;color:var(--accent)" onclick="resolveFlag('${id}','${f.id}')">✓ Resolved</button>
+                  <button class="btn-entry-del" onclick="deleteFlag('${id}','${f.id}')">🗑️</button>
+                </div>`:''}
+              </div>`).join('')}
+          </div>`:''}
+        ${past.length?`
+          <div>
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono);margin-bottom:8px">Past interruptions</div>
+            ${past.slice(0,5).map(f=>`
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:7px;margin-bottom:5px;flex-wrap:wrap;opacity:0.75">
+                <span>${typeIcon[f.type]||'❓'}</span>
+                <div style="flex:1;font-size:12px">
+                  <span style="color:var(--text2)">${f.type}</span>
+                  ${f.description?` · ${f.description}`:''}
+                  <span style="color:var(--text3);font-family:var(--font-mono);font-size:11px;margin-left:8px">${f.startedOn} → ${f.endedOn}</span>
+                </div>
+                ${isCoach?`<button class="btn-entry-del" onclick="deleteFlag('${id}','${f.id}')">🗑️</button>`:''}
+              </div>`).join('')}
+          </div>`:''}
+        ${!flags.length?`<div style="color:var(--text3);font-size:13px">No interruptions logged.</div>`:''}
+      </div>`;
+    })()}
 
     <!-- ACHIEVEMENTS -->
     ${achs.length?`
@@ -2210,7 +2315,7 @@ function renderProfile(id,targetEl='profile-content'){
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">
         ${latest.t400?`<div class="detail-chip"><div class="detail-chip-label">400m</div><div class="detail-chip-val">${secsToMMSS(latest.t400)}</div>${stdTag(std.t400)}</div>`:''}
         ${latest.t2400?`<div class="detail-chip"><div class="detail-chip-label">2.4km</div><div class="detail-chip-val">${secsToMMSS(latest.t2400)}</div>${stdTag(std.t2400)}</div>`:''}
-        ${mas?`<div class="detail-chip"><div class="detail-chip-label">MAS</div><div class="detail-chip-val" style="color:var(--accent)">${mas.toFixed(1)}<span style="font-size:11px;color:var(--text3)"> km/h</span></div>${stdTag(std.mas)}</div>`:''}
+        ${mas?`<div class="detail-chip"><div class="detail-chip-label" title="Average speed of the 2.4km run, used as a vV̇O₂max proxy. Not a strict progressive MAS test.">Aero Speed</div><div class="detail-chip-val" style="color:var(--accent)">${mas.toFixed(1)}<span style="font-size:11px;color:var(--text3)"> km/h</span></div>${stdTag(std.mas)}</div>`:''}
         ${vdot?`<div class="detail-chip"><div class="detail-chip-label">VDOT</div><div class="detail-chip-val" style="color:var(--accent)">${vdot.toFixed(1)}</div></div>`:''}
         ${vo2max?`<div class="detail-chip"><div class="detail-chip-label" title="Estimated from a running time trial — not a lab measurement">Est. VO₂max</div><div class="detail-chip-val" style="color:var(--purple)">${vo2max.toFixed(1)}<span style="font-size:10px;color:var(--text3)"> est</span></div>${vo2maxSource?`<div style="font-size:9px;font-family:var(--font-mono);margin-top:3px;color:var(--text3)">${vo2maxSource}</div>`:''}</div>`:''}
         ${latest.cmj?`<div class="detail-chip"><div class="detail-chip-label">CMJ</div><div class="detail-chip-val">${latest.cmj}<span style="font-size:11px;color:var(--text3)"> cm</span></div>${stdTag(std.cmj)}</div>`:''}
@@ -2228,7 +2333,7 @@ function renderProfile(id,targetEl='profile-content'){
     <div class="section-card">
       <div class="section-title">Trend — Last ${Math.min(tests.length,5)} Tests</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)">MAS (km/h)</div><canvas id="trend-mas-${id}" width="300" height="100"></canvas></div>
+        <div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)">Aero Speed (km/h)</div><canvas id="trend-mas-${id}" width="300" height="100"></canvas></div>
         <div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)">VDOT</div><canvas id="trend-vdot-${id}" width="300" height="100"></canvas></div>
         <div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)">CMJ (cm)</div><canvas id="trend-cmj-${id}" width="300" height="100"></canvas></div>
         <div><div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono)">Weight (kg)</div><canvas id="trend-wt-${id}" width="300" height="100"></canvas></div>
@@ -2241,9 +2346,9 @@ function renderProfile(id,targetEl='profile-content'){
         <div class="section-title">HR zones <span style="font-size:10px;font-weight:400;color:var(--text3)">(Karvonen)</span></div>
         ${hrZones.map(z=>`<div class="zone-row"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}</div><div class="zone-range">${z.low}–${z.high} bpm</div></div>`).join('')}
       </div>
-      <!-- PACE ZONES + MAS zones -->
+      <!-- PACE + INTENSITY ZONES -->
       <div class="section-card" style="grid-column:1/-1">
-        <div class="section-title">Pace + MAS Intensity Zones <span style="font-size:10px;font-weight:400;color:var(--text3)">(VDOT ${vdot?.toFixed(1)||'—'} · MAS ${mas?.toFixed(1)||'—'} km/h · source: ${vdotSourceLabel})</span></div>
+        <div class="section-title">Pace &amp; Intensity Zones <span style="font-size:10px;font-weight:400;color:var(--text3)">(VDOT ${vdot?.toFixed(1)||'—'} · Aero Speed ${mas?.toFixed(1)||'—'} km/h · source: ${vdotSourceLabel})</span></div>
         ${paceZones&&mas ? renderMASZonesWithIntervals(paceZones,mas) : '<div style="color:var(--text3);font-size:13px">No test data. Add a test result or set a VDOT source above.</div>'}
       </div>
     </div>
@@ -2346,6 +2451,53 @@ function renderProfile(id,targetEl='profile-content'){
       </div>
     </div>`:''}
 
+    <!-- TRAINING LOAD (from diary RPE) -->
+    ${(()=>{
+      const diaryWithRPE=(a.diary||[]).filter(d=>d.rpe&&d.date&&d.type!=='rest').sort((x,y)=>x.date.localeCompare(y.date));
+      if(diaryWithRPE.length<3)return'';
+      // Group into weeks (Mon–Sun), last 12 weeks
+      const weeks={};
+      const cutoff=new Date();cutoff.setDate(cutoff.getDate()-84);
+      diaryWithRPE.forEach(d=>{
+        if(new Date(d.date)<cutoff)return;
+        const dt=new Date(d.date);
+        const day=dt.getDay();
+        const mon=new Date(dt);mon.setDate(dt.getDate()-(day===0?6:day-1));
+        const wk=mon.toISOString().split('T')[0];
+        if(!weeks[wk])weeks[wk]={sessions:0,rpeSum:0,types:[]};
+        weeks[wk].sessions++;
+        weeks[wk].rpeSum+=parseInt(d.rpe)||0;
+        weeks[wk].types.push(d.type);
+      });
+      const wkKeys=Object.keys(weeks).sort().slice(-12);
+      if(wkKeys.length<2)return'';
+      const avgRPEs=wkKeys.map(w=>weeks[w].rpeSum/weeks[w].sessions);
+      const sessionsPerWk=wkKeys.map(w=>weeks[w].sessions);
+      const maxRPE=Math.max(...avgRPEs,1);
+      const maxSess=Math.max(...sessionsPerWk,1);
+      const barW=Math.max(16,Math.floor(280/wkKeys.length)-4);
+      const bars=wkKeys.map((wk,i)=>{
+        const rpe=avgRPEs[i];const sess=sessionsPerWk[i];
+        const h=Math.round((rpe/maxRPE)*60);
+        const color=rpe>=8?'var(--red)':rpe>=6?'var(--orange)':rpe>=4?'var(--accent)':'var(--blue)';
+        const label=wk.slice(5);// MM-DD
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:${barW}px">
+          <div style="font-size:9px;color:var(--text3);font-family:var(--font-mono)">${rpe.toFixed(1)}</div>
+          <div style="width:${barW}px;height:${h}px;background:${color};border-radius:3px 3px 0 0;min-height:3px" title="Week ${label}: ${sess} session${sess!==1?'s':''}, avg RPE ${rpe.toFixed(1)}"></div>
+          <div style="font-size:8px;color:var(--text3);font-family:var(--font-mono);transform:rotate(-30deg);transform-origin:top left;white-space:nowrap;margin-top:4px;margin-left:4px">${label}</div>
+        </div>`;
+      }).join('');
+      return `<div class="section-card">
+        <div class="section-title">Training Load <span style="font-size:11px;font-weight:400;color:var(--text3)">from diary RPE · last 12 weeks</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Average session RPE per week (bar height). Sessions logged from diary entries with RPE recorded.</div>
+        <div style="display:flex;align-items:flex-end;gap:2px;padding-bottom:20px;min-height:80px;overflow-x:auto">${bars}</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+          <div style="font-size:11px;color:var(--text2)">🟦 Low (RPE &lt;4) &nbsp; 🟩 Moderate (4–6) &nbsp; 🟧 High (6–8) &nbsp; 🟥 Very high (&gt;8)</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px">⚠ Diary RPE only captures subjective effort, not volume. Add duration to diary entries for full sRPE-TRIMP load calculation.</div>
+      </div>`;
+    })()}
+
     <!-- TEST HISTORY -->
     <div class="section-card">
       <div class="section-title">Test History <span style="font-size:11px;font-weight:400;color:var(--text3)">${tests.length} session${tests.length!==1?'s':''}</span>
@@ -2361,7 +2513,7 @@ function renderProfile(id,targetEl='profile-content'){
           <div class="test-metrics">
             ${t.t400?`<div class="test-metric"><span class="test-metric-label">400m: </span><span class="test-metric-val">${secsToMMSS(t.t400)}</span></div>`:''}
             ${t.t2400?`<div class="test-metric"><span class="test-metric-label">2.4km: </span><span class="test-metric-val">${secsToMMSS(t.t2400)}</span></div>`:''}
-            ${t.t2400?`<div class="test-metric"><span class="test-metric-label">MAS: </span><span class="test-metric-val" style="color:var(--accent)">${calcMAS2400(t.t2400).toFixed(1)} km/h</span></div>`:''}
+            ${t.t2400?`<div class="test-metric"><span class="test-metric-label" title="Average 2.4km run speed — vV̇O₂max proxy">Aero Speed: </span><span class="test-metric-val" style="color:var(--accent)">${calcMAS2400(t.t2400).toFixed(1)} km/h</span></div>`:''}
             ${t.t2400?`<div class="test-metric"><span class="test-metric-label">VDOT: </span><span class="test-metric-val" style="color:var(--blue)">${calcVDOT(2400,t.t2400).toFixed(1)}</span></div>`:''}
             ${t.t2400?`<div class="test-metric"><span class="test-metric-label">Est. VO₂max: </span><span class="test-metric-val" style="color:var(--purple)">${estimateVO2max({t2400:t.t2400}).value.toFixed(1)}</span></div>`:''}
             ${t.cmj?`<div class="test-metric"><span class="test-metric-label">CMJ: </span><span class="test-metric-val">${t.cmj}cm</span></div>`:''}
@@ -2475,7 +2627,7 @@ function renderTimepointCompare(id){
   const metrics=[
     {label:'400m',keyA:'t400',fmt:v=>secsToMMSS(v),lowerBetter:true,numA:tA.t400,numB:tB.t400,getPct:(a,b)=>b&&a?((b-a)/b*100).toFixed(1):null},
     {label:'2.4km',keyA:'t2400',fmt:v=>secsToMMSS(v),lowerBetter:true,numA:tA.t2400,numB:tB.t2400,getPct:(a,b)=>b&&a?((b-a)/b*100).toFixed(1):null},
-    {label:'MAS km/h',computed:t=>t.t2400?calcMAS2400(t.t2400):null,fmt:v=>v.toFixed(2),lowerBetter:false},
+    {label:'Aero Speed km/h',computed:t=>t.t2400?calcMAS2400(t.t2400):null,fmt:v=>v.toFixed(2),lowerBetter:false},
     {label:'VDOT',computed:t=>t.t2400?calcVDOT(2400,t.t2400):null,fmt:v=>v.toFixed(1),lowerBetter:false},
     {label:'Est. VO₂max',computed:t=>t.t2400?estimateVO2max({t2400:t.t2400}).value:null,fmt:v=>v.toFixed(1),lowerBetter:false},
     {label:'CMJ cm',keyA:'cmj',fmt:v=>v,lowerBetter:false,numA:tA.cmj,numB:tB.cmj},
@@ -2686,6 +2838,93 @@ function diaryTypeColor(type){
   return map[type]||'var(--border2)';
 }
 
+// ─── CSV EXPORT ───────────────────────────────────────────────
+function exportSquadCSV(){
+  const rows=[['athlete_id','first_name','last_name','dob','gender','event','test_date',
+    'effort','surface','weather','t400_secs','t400_mmss','t2400_secs','t2400_mmss',
+    'aero_speed_kmh','vdot','est_vo2max','cmj_cm','sj_cm','eur',
+    'height_cm','weight_cm','bmi','rhr_bpm','mhr_bpm','notes','flags_active']];
+
+  DB.athletes.forEach(a=>{
+    const tests=approvedTests(a).sort((x,y)=>x.date.localeCompare(y.date));
+    const activeFlags=(a.flags||[]).filter(f=>!f.endedOn).map(f=>f.type).join('|');
+    if(!tests.length){
+      rows.push([a.id,a.fname,a.lname,a.dob||'',a.gender||'',a.event||'',
+        '','','','','','','','','','','','','','','','','','','','',activeFlags]);
+      return;
+    }
+    tests.forEach(t=>{
+      const aeroSpeed=t.t2400?calcMAS2400(t.t2400).toFixed(2):'';
+      const vdot=t.t2400?calcVDOT(2400,t.t2400).toFixed(1):'';
+      const vo2=t.t2400?estimateVO2max({t2400:t.t2400}).value.toFixed(1):'';
+      const eur=(t.cmj&&t.sj)?(t.cmj/t.sj).toFixed(2):'';
+      const bmi=(t.height&&t.weight)?(t.weight/((t.height/100)**2)).toFixed(1):'';
+      rows.push([
+        a.id,a.fname,a.lname,a.dob||'',a.gender||'',a.event||'',
+        t.date||'',t.effort||'',t.surface||'',t.weather||'',
+        t.t400||'',t.t400?secsToMMSS(t.t400):'',
+        t.t2400||'',t.t2400?secsToMMSS(t.t2400):'',
+        aeroSpeed,vdot,vo2,
+        t.cmj||'',t.sj||'',eur,
+        t.height||'',t.weight||'',bmi,
+        t.rhr||'',t.mhr||'',
+        (t.notes||'').replace(/,/g,''),
+        activeFlags
+      ]);
+    });
+  });
+
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`CHK_Athletics_Export_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+function openAddFlag(aid){
+  document.getElementById('flg-aid').value=aid;
+  document.getElementById('flg-start').value=new Date().toISOString().split('T')[0];
+  document.getElementById('flg-end').value='';
+  document.getElementById('flg-desc').value='';
+  document.getElementById('flg-type').value='injury';
+  openModal('modal-add-flag');
+}
+function saveFlag(){
+  const aid=document.getElementById('flg-aid').value;
+  const a=DB.athletes.find(x=>x.id===aid);if(!a)return;
+  const flag={
+    id:'f'+Date.now(),
+    type:document.getElementById('flg-type').value,
+    startedOn:document.getElementById('flg-start').value,
+    endedOn:document.getElementById('flg-end').value||null,
+    description:document.getElementById('flg-desc').value.trim(),
+  };
+  if(!flag.startedOn){alert('Start date required.');return;}
+  a.flags=a.flags||[];
+  a.flags.push(flag);
+  saveDB();closeModal('modal-add-flag');renderProfile(aid);
+  sbInsert('athlete_flags',{
+    athlete_id:aid,
+    type:flag.type,
+    description:flag.description||null,
+    started_on:flag.startedOn,
+    ended_on:flag.endedOn||null
+  });
+}
+function resolveFlag(aid,flagId){
+  const a=DB.athletes.find(x=>x.id===aid);if(!a)return;
+  const f=(a.flags||[]).find(x=>x.id===flagId);if(!f)return;
+  f.endedOn=new Date().toISOString().split('T')[0];
+  saveDB();renderProfile(aid);
+  sbUpdate('athlete_flags',flagId,{ended_on:f.endedOn});
+}
+function deleteFlag(aid,flagId){
+  const a=DB.athletes.find(x=>x.id===aid);if(!a)return;
+  a.flags=(a.flags||[]).filter(x=>x.id!==flagId);
+  saveDB();renderProfile(aid);
+  sbDelete('athlete_flags',flagId);
+}
+
 function deleteDiaryEntry(aid,entryId){
   if(!confirm('Delete this diary entry?'))return;
   const a=DB.athletes.find(x=>x.id===aid);if(!a)return;
@@ -2870,7 +3109,7 @@ function renderAthletesList(){
         <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#0099ff);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0">${a.fname[0]}${a.lname[0]}</div>
         <div class="alr-name">${a.fname} ${a.lname}</div>
         <div class="alr-meta">${a.event||'—'} · ${calcAge(a.dob)||'?'}y · ${a.gender==='M'?'♂':'♀'}</div>
-        <div class="alr-meta" style="color:var(--accent)">${mas!=='—'?'MAS '+mas:'No test'}</div>
+        <div class="alr-meta" style="color:var(--accent)">${mas!=='—'?'Aero Speed '+mas:'No test'}</div>
         <div class="alr-meta" style="color:var(--blue)">${vdot!=='—'?'VDOT '+vdot:''}</div>
         <div style="display:flex;gap:6px;margin-left:auto" onclick="event.stopPropagation()">
           <button class="btn-sm" onclick="openProfile('${a.id}')">View</button>
@@ -2889,7 +3128,7 @@ function renderAthletesList(){
         <div class="ac-name">${a.fname} ${a.lname}</div>
         <div class="ac-meta">${age}y · ${a.gender==='M'?'♂':'♀'} · ${a.event||'—'} ${latest?'· <span class="tag tag-green">'+latest.date+'</span>':'<span class="no-test-badge">No test yet</span>'}</div>
         <div class="ac-stats">
-          <div class="ac-stat"><div class="ac-stat-label">MAS km/h</div>${masHtml}</div>
+          <div class="ac-stat"><div class="ac-stat-label" title="Average 2.4km run speed — vV̇O₂max proxy">Aero Speed</div>${masHtml}</div>
           <div class="ac-stat"><div class="ac-stat-label">VDOT</div>${vdotHtml}</div>
           <div class="ac-stat"><div class="ac-stat-label">CMJ cm</div><span class="ac-stat-val ${latest?.cmj?'':'muted'}">${latest?.cmj||'—'}</span></div>
           <div class="ac-stat"><div class="ac-stat-label">Tests</div><span class="ac-stat-val">${tests.length}</span></div>
@@ -3217,7 +3456,7 @@ function calcVDOTStandalone(){
   }
   const paceZones=calcPaceZones(vdot);
   document.getElementById('calc-zones-output').innerHTML=`
-    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono)">Pace + MAS Intensity Zones with Interval Times</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono)">Pace &amp; Intensity Zones with Interval Times</div>
     ${renderMASZonesWithIntervals(paceZones,mas)}`;
   const preds=calcRacePredictions(vdot);
   document.getElementById('calc-races-output').innerHTML=`
@@ -3367,7 +3606,7 @@ function renderMASZonesWithIntervals(paceZones, mas){
       </tbody>
     </table>
     </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:8px">MAS = ${mas.toFixed(2)} km/h · Interval times show completion range for each distance at that zone intensity. Faster time = top of zone, slower = bottom.</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px">Aerobic Speed (vV̇O₂max proxy) = ${mas.toFixed(2)} km/h · Interval times show completion range for each distance at that zone intensity. Faster time = top of zone, slower = bottom.</div>
   `;
 }
 function calcPaceZones(vdot){
