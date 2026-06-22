@@ -171,6 +171,123 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 @media(max-width:800px){.profile-grid{grid-template-columns:1fr;}}
 
+/* ── TABLET (≤768px) ───────────────────────────────────────── */
+@media(max-width:768px){
+  .topbar{padding:0 16px;height:56px;gap:12px;}
+  .topbar-logo{font-size:14px;letter-spacing:2px;}
+  .topbar-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:2px;padding-bottom:2px;}
+  .topbar-nav::-webkit-scrollbar{display:none;}
+  .nav-btn{font-size:11px;padding:6px 12px;white-space:nowrap;flex-shrink:0;}
+  .topbar-right{gap:8px;}
+  .user-badge{display:none;}
+  .main{padding:16px;}
+  .page-header{margin-bottom:16px;}
+  .page-title{font-size:24px;}
+  .squad-controls{gap:8px;}
+  .search-box{width:180px;}
+  .squad-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;}
+  .athlete-card{padding:18px 16px;}
+  .squad-stats-bar{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .squad-stat-chip{padding:14px 16px;}
+  .squad-stat-val{font-size:22px;}
+  .section-card{padding:20px 18px;}
+  .section-title{font-size:13px;margin-bottom:16px;}
+  .profile-header{padding:24px 20px;}
+  .profile-name{font-size:32px;}
+  .profile-details{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  .detail-chip{padding:12px;}
+  .detail-chip-val{font-size:16px;}
+  .form-grid-2{grid-template-columns:1fr;}
+  .modal{padding:24px 20px;}
+  .modal-title{font-size:18px;}
+  .lb-table td{padding:12px 14px;}
+  .lb-table th{padding:10px 14px;}
+  .lb-name{font-size:14px;}
+  .lb-val{font-size:17px;}
+  .ranking-table th,.ranking-table td{padding:10px 12px;}
+  .zone-row{flex-wrap:wrap;gap:8px;}
+  .approval-item{padding:14px;}
+  .profile-top{flex-direction:column;}
+  .profile-actions{width:100%;}
+  .vdot-inputs{grid-template-columns:1fr 1fr;}
+  .vdot-number{font-size:28px;}
+  .lb-rank-num.r1{font-size:22px;}
+  .lb-rank-num.r2{font-size:20px;}
+  .lb-rank-num.r3{font-size:18px;}
+  .tab-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tab-bar::-webkit-scrollbar{display:none;}
+  .tab-btn{white-space:nowrap;flex-shrink:0;padding:10px 16px;}
+}
+
+/* ── PHONE (≤480px) ────────────────────────────────────────── */
+@media(max-width:480px){
+  .topbar{padding:0 12px;height:52px;}
+  .topbar-logo{font-size:13px;letter-spacing:1px;}
+  .topbar-logo::after{content:none;}
+  .nav-btn{font-size:10px;padding:5px 10px;}
+  .main{padding:12px 10px;}
+  .page-title{font-size:20px;}
+  .search-box{width:140px;font-size:12px;}
+  .squad-grid{grid-template-columns:1fr;gap:8px;}
+  .athlete-card{padding:16px 14px;}
+  .ac-name{font-size:15px;}
+  .ac-stats{grid-template-columns:1fr 1fr;gap:10px;}
+  .squad-stats-bar{grid-template-columns:1fr 1fr;}
+  .squad-stat-chip{padding:12px;}
+  .squad-stat-val{font-size:20px;}
+  .section-card{padding:14px 12px;margin-bottom:10px;}
+  .section-title{font-size:12px;margin-bottom:12px;}
+  .profile-header{padding:18px 14px;}
+  .profile-name{font-size:26px;letter-spacing:-0.5px;}
+  .profile-details{grid-template-columns:1fr 1fr;}
+  .detail-chip{padding:10px;}
+  .detail-chip-label{font-size:8px;}
+  .detail-chip-val{font-size:15px;}
+  .modal{padding:18px 14px;border-radius:var(--radius);}
+  .modal-overlay{padding:12px;}
+  .modal-title{font-size:16px;margin-bottom:16px;}
+  .modal-actions{flex-direction:column;gap:8px;}
+  .modal-actions .btn-cancel,.modal-actions .btn-save,.modal-actions .btn-accent,.modal-actions .btn-danger{width:100%;text-align:center;}
+  .form-grid-2{grid-template-columns:1fr;}
+  .vdot-inputs{grid-template-columns:1fr;}
+  .vdot-result{border-left:none;border-top:1px solid var(--border);padding:12px 0;}
+  .vdot-number{font-size:26px;}
+  .ranking-table th{font-size:9px;padding:8px;letter-spacing:0.5px;}
+  .ranking-table td{padding:8px;font-size:12px;}
+  .lb-table th{font-size:9px;padding:8px 10px;}
+  .lb-table td{padding:10px;}
+  .lb-rank-num{font-size:18px;}
+  .lb-rank-num.r1{font-size:20px;}
+  .lb-rank-num.r2,.lb-rank-num.r3{font-size:18px;}
+  .lb-name{font-size:13px;}
+  .lb-val{font-size:15px;}
+  .lb-sub{font-size:10px;}
+  .lb-event-pill{font-size:9px;}
+  .zone-row{padding:10px;}
+  .zone-name{font-size:11px;}
+  .zone-range{font-size:12px;}
+  .zone-mas{display:none;}
+  .test-entry{padding:12px;}
+  .test-metrics{gap:16px;}
+  .test-metric-val{font-size:14px;}
+  .athlete-list-row{flex-wrap:wrap;gap:8px;padding:14px 12px;}
+  .alr-name{font-size:14px;}
+  .back-btn{margin-bottom:14px;}
+  .page-header{flex-direction:column;align-items:flex-start;gap:10px;}
+  .squad-controls{width:100%;}
+  .search-box{width:100%;flex:1;}
+  .add-btn{font-size:10px;padding:9px 14px;}
+  #squad-mas-dist{height:44px;}
+  .lb-bar-wrap{max-width:100%;}
+}
+
+/* Full-screen modal on phones */
+@media(max-width:480px){
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal{max-width:100%;border-radius:var(--radius) var(--radius) 0 0;max-height:92vh;}
+}
+
+
 /* VDOT INPUT */
 .vdot-inputs{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;align-items:end;margin-bottom:20px;}
 .vdot-result{background:transparent;border-left:1px solid var(--border);padding:12px 24px;}
@@ -370,6 +487,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
     <div class="topbar-right">
       <button class="btn-sm" onclick="toggleTheme()" id="theme-btn" title="Toggle light / dark" style="font-size:16px;padding:6px 10px;border:none;">🌙</button>
       <span id="sync-status" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;">⏳</span>
+      <span id="gs-sync-status" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);letter-spacing:1px;" title="Google Sheets backup status"></span>
+      <button class="btn-sm" id="btn-gs-settings" onclick="openGSSettings()" style="display:none;font-size:11px;padding:5px 10px" title="Google Sheets backup settings">📊</button>
       <span class="user-badge" id="user-badge"></span>
       <button class="btn-sm" onclick="doLogout()" style="border:none;">Exit</button>
     </div>
@@ -667,6 +786,33 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- GOOGLE SHEETS BACKUP MODAL -->
+<div class="modal-overlay" id="modal-gs-settings">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title">📊 Google Sheets Backup</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.7;background:var(--surface2);padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border)">
+      Data syncs to Google Sheets automatically on every save — no manual exports needed. You get 6 live sheets: Athletes, Tests, Competitions, Personal Bests, Diary, and a timestamped Backups log.
+    </div>
+    <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;border-left:2px solid var(--accent);padding-left:12px;line-height:1.9">
+      1. Open your Google Sheet → Extensions → Apps Script<br>
+      2. Paste the <strong style="color:var(--text)">CHK_Backup_Script.gs</strong> file (provided separately)<br>
+      3. Deploy → New deployment → Web app<br>
+      4. Execute as: <strong style="color:var(--text)">Me</strong> · Who has access: <strong style="color:var(--text)">Anyone</strong><br>
+      5. Authorise and copy the Web App URL below
+    </div>
+    <div class="form-group">
+      <label class="form-label">Apps Script Web App URL</label>
+      <input type="text" class="form-input" id="gs-url-input" placeholder="https://script.google.com/macros/s/..." style="font-family:var(--font-mono);font-size:12px">
+    </div>
+    <div id="gs-test-result" style="font-size:11px;font-family:var(--font-mono);margin-top:8px;min-height:18px"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-gs-settings')">Cancel</button>
+      <button class="btn-accent" onclick="testGSConnection()">Test connection</button>
+      <button class="btn-save" onclick="saveGSSettings()">Save &amp; sync now</button>
+    </div>
   </div>
 </div>
 
@@ -1215,7 +1361,63 @@ async function sbUpdate(table,id,row){if(!sb)return;setSync('saving');const {err
 async function sbDelete(table,id){if(!sb)return;setSync('saving');const {error}=await sb.from(table).delete().eq('id',id);error?setSync('error'):setSync('ok');}
 
 // Legacy saveDB — now just caches locally. Real writes go through sb* helpers.
-function saveDB(){try{localStorage.setItem('squadtracker_v2',JSON.stringify(DB));}catch(e){}}
+function saveDB(){
+  try{localStorage.setItem('squadtracker_v2',JSON.stringify(DB));}catch(e){}
+  scheduleGSSync();
+}
+
+// ─── GOOGLE SHEETS BACKUP ─────────────────────────────────────
+let _gsSyncTimer=null;
+function scheduleGSSync(){
+  // Debounce — fire 6 seconds after the last saveDB call
+  clearTimeout(_gsSyncTimer);
+  _gsSyncTimer=setTimeout(pushToGoogleSheets,6000);
+}
+
+function getGSUrl(){return localStorage.getItem('chk_gs_url')||'';}
+
+function pushToGoogleSheets(){
+  const url=getGSUrl();if(!url)return;
+  const el=document.getElementById('gs-sync-status');
+  if(el)el.textContent='📊 Saving...';
+  fetch(url,{method:'POST',body:JSON.stringify(DB),headers:{'Content-Type':'text/plain'}})
+    .then(r=>r.json())
+    .then(d=>{
+      if(el)el.textContent=d.status==='ok'?'📊 ✓':'📊 ⚠';
+      setTimeout(()=>{if(el)el.textContent='';},4000);
+    })
+    .catch(()=>{if(el){el.textContent='📊 ✗';el.style.color='var(--red)';}
+      setTimeout(()=>{if(el){el.textContent='';el.style.color='var(--text3)';}},4000);
+    });
+}
+
+function openGSSettings(){
+  document.getElementById('gs-url-input').value=getGSUrl();
+  document.getElementById('gs-test-result').textContent='';
+  openModal('modal-gs-settings');
+}
+
+function saveGSSettings(){
+  const url=document.getElementById('gs-url-input').value.trim();
+  if(!url){alert('Paste the Apps Script URL first.');return;}
+  localStorage.setItem('chk_gs_url',url);
+  closeModal('modal-gs-settings');
+  pushToGoogleSheets(); // immediate sync
+}
+
+function testGSConnection(){
+  const url=document.getElementById('gs-url-input').value.trim();
+  const res=document.getElementById('gs-test-result');
+  if(!url){res.textContent='⚠ Enter a URL first.';res.style.color='var(--orange)';return;}
+  res.textContent='Testing...';res.style.color='var(--text3)';
+  fetch(url,{method:'GET'})
+    .then(r=>r.json())
+    .then(d=>{
+      res.textContent=d.status==='ok'?`✓ Connected — last backup: ${d.lastBackup||'none yet'}`:`⚠ Response: ${JSON.stringify(d)}`;
+      res.style.color=d.status==='ok'?'var(--accent)':'var(--orange)';
+    })
+    .catch(e=>{res.textContent='✗ Could not reach the URL. Check it was deployed correctly.';res.style.color='var(--red)';});
+}
 
 function refreshCurrentView(){
   const active = document.querySelector('.view.active');
@@ -1326,6 +1528,7 @@ function launchApp(){
   document.getElementById('nav-athletes-list').style.display=isCoach?'':'none';
   document.getElementById('nav-bulk-test').style.display=isCoach?'':'none';
   document.getElementById('nav-export').style.display=isCoach?'':'none';
+  document.getElementById('btn-gs-settings').style.display=isCoach?'':'none';
   document.getElementById('nav-leaderboard').style.display=isPublic?'none':'';
   document.getElementById('nav-my-profile').style.display=(isCoach||isPublic)?'none':'';
   document.getElementById('nav-my-diary').style.display=(isCoach||isPublic)?'none':'';
