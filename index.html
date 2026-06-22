@@ -79,13 +79,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 /* LOGIN */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);}
 .login-box{width:420px;padding:48px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);}
-.login-logo{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;text-align:center;}
+.login-logo{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--accent);letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;text-align:center;}
 .login-sub{color:var(--text2);font-size:12px;margin-bottom:36px;font-weight:400;text-align:center;letter-spacing:1px;text-transform:uppercase;}
 .login-tabs{display:flex;gap:0;margin-bottom:32px;border-bottom:1px solid var(--border);}
 .login-tab{flex:1;padding:12px 0;border:none;background:none;color:var(--text3);font-family:var(--font-body);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.3s;position:relative;}
 .login-tab.active{color:var(--text);}
 .login-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:var(--accent);}
-.form-group{margin-bottom:24px;}
+.form-group{margin-bottom:16px;}
 .form-label{display:block;font-size:10px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);}
 .form-input{width:100%;padding:14px 16px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:all 0.3s;}
 .form-input:focus{border-color:var(--accent);background:var(--surface2);}
@@ -97,8 +97,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 
 /* APP SHELL */
 #app{display:none;flex-direction:column;min-height:100vh;}
-.topbar{display:flex;align-items:center;padding:0 32px;height:72px;background:var(--surface);border-bottom:1px solid var(--border);gap:24px;position:sticky;top:0;z-index:100;}
-.topbar-logo{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+.topbar{display:flex;align-items:center;padding:0 36px;height:68px;background:var(--surface);border-bottom:1px solid var(--border);gap:24px;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text);letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
 .topbar-logo span{color:var(--accent);}
 .topbar-nav{display:flex;gap:4px;flex:1;flex-wrap:wrap;}
 .nav-btn{padding:8px 16px;border:none;background:transparent;color:var(--text2);font-family:var(--font-body);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:1px;border-radius:var(--radius);cursor:pointer;transition:all 0.3s;white-space:nowrap;}
@@ -108,22 +108,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .user-badge{font-size:10px;color:var(--accent);font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;border:1px solid var(--border);padding:6px 10px;border-radius:var(--radius);}
 .btn-sm{padding:8px 16px;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:var(--radius);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-family:var(--font-body);transition:all 0.3s;}
 .btn-sm:hover{border-color:var(--accent);color:var(--text);}
-.main{flex:1;padding:48px 32px;max-width:1440px;width:100%;margin:0 auto;}
+.main{flex:1;padding:28px 32px;max-width:1600px;width:100%;margin:0 auto;}
 .view{display:none;}.view.active{display:block;}
 
 /* PAGE HEADER */
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px;}
-.page-title{font-family:var(--font-display);font-size:28px;font-weight:500;letter-spacing:-0.5px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px;}
+.page-title{font-family:var(--font-display);font-size:52px;font-weight:700;letter-spacing:-2px;}
 .squad-controls{display:flex;gap:12px;flex-wrap:wrap;}
 .search-box{padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-body);font-size:13px;outline:none;width:240px;transition:all 0.3s;}
 .search-box:focus{border-color:var(--accent);background:var(--surface2);}
 
 /* SQUAD GRID */
-.squad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.athlete-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;cursor:pointer;transition:all 0.3s;position:relative;}
+.squad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;}
+.athlete-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;cursor:pointer;transition:all 0.3s;position:relative;}
 .athlete-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
-.ac-name{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:6px;}
-.ac-meta{font-size:11px;color:var(--text2);margin-bottom:24px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;}
+.ac-name{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:8px;}
+.ac-meta{font-size:11px;color:var(--text2);margin-bottom:24px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px;}
 .ac-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .ac-stat{border-left:1px solid var(--border);padding-left:12px;}
 .ac-stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px;}
@@ -132,18 +132,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .no-test-badge{display:inline-block;font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;}
 
 /* SQUAD DASHBOARD STATS */
-.squad-stats-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;margin-bottom:40px;background:var(--border);border:1px solid var(--border);}
+.squad-stats-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;margin-bottom:24px;background:var(--border);border:1px solid var(--border);}
 .squad-stats-bar [style*="grid-column:1/-1"]{grid-column:1/-1;background:var(--surface2);border-bottom:1px solid var(--border);}
-.squad-stat-chip{background:var(--surface);padding:24px;transition:all 0.3s;}
+.squad-stat-chip{background:var(--surface);padding:18px 20px;transition:all 0.3s;}
 .squad-stat-chip:hover{background:var(--surface2);}
-.squad-stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:12px;}
-.squad-stat-val{font-size:24px;font-weight:500;font-family:var(--font-mono);color:var(--text);}
+.squad-stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:8px;}
+.squad-stat-val{font-size:32px;font-weight:600;font-family:var(--font-mono);color:var(--text);}
 .squad-stat-sub{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--font-mono);}
 
 /* RANKING TABLE */
 .ranking-table{width:100%;border-collapse:collapse;}
-.ranking-table th{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);padding:16px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;}
-.ranking-table td{padding:16px;border-bottom:1px solid var(--border);font-size:13px;}
+.ranking-table th{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;}
+.ranking-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;}
 .ranking-table tr:last-child td{border-bottom:none;}
 .ranking-table tr:hover td{background:var(--surface2);}
 .rank-num{font-family:var(--font-mono);color:var(--text3);font-size:12px;}
@@ -151,30 +151,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .rank-name:hover{color:var(--accent);}
 
 /* PROFILE */
-.back-btn{display:inline-flex;align-items:center;gap:8px;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;cursor:pointer;margin-bottom:32px;padding:8px 0;background:none;border:none;transition:color 0.3s;}
+.back-btn{display:inline-flex;align-items:center;gap:8px;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;cursor:pointer;margin-bottom:20px;padding:8px 0;background:none;border:none;transition:color 0.3s;}
 .back-btn:hover{color:var(--accent);}
-.profile-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px;margin-bottom:24px;position:relative;overflow:hidden;}
-.profile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:40px;}
-.profile-name{font-family:var(--font-display);font-size:40px;font-weight:600;letter-spacing:-1px;}
+.profile-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:36px 40px;margin-bottom:16px;position:relative;overflow:hidden;}
+.profile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px;}
+.profile-name{font-family:var(--font-display);font-size:54px;font-weight:700;letter-spacing:-2px;}
 .profile-subtitle{color:var(--text2);font-size:13px;margin-top:12px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;}
 .profile-actions{display:flex;gap:12px;flex-wrap:wrap;}
-.profile-details{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:2px;background:var(--border);border:1px solid var(--border);}
-.detail-chip{background:var(--surface);padding:20px;}
+.profile-details{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px;background:var(--border);border:1px solid var(--border);}
+.detail-chip{background:var(--surface);padding:14px 16px;}
 .detail-chip-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:8px;}
-.detail-chip-val{font-size:18px;font-weight:500;font-family:var(--font-mono);}
+.detail-chip-val{font-size:22px;font-weight:600;font-family:var(--font-mono);}
 
 /* SECTION CARDS */
-.section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px;margin-bottom:24px;}
-.section-title{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text);margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 32px;margin-bottom:16px;}
+.section-title{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--text);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 
 /* PROFILE GRID */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 @media(max-width:800px){.profile-grid{grid-template-columns:1fr;}}
 
 /* VDOT INPUT */
-.vdot-inputs{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;align-items:end;margin-bottom:32px;}
+.vdot-inputs{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;align-items:end;margin-bottom:20px;}
 .vdot-result{background:transparent;border-left:1px solid var(--border);padding:12px 24px;}
-.vdot-number{font-family:var(--font-mono);font-size:32px;font-weight:500;color:var(--text);letter-spacing:-1px;}
+.vdot-number{font-family:var(--font-mono);font-size:40px;font-weight:600;color:var(--text);letter-spacing:-2px;}
 .vdot-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:8px;}
 
 /* ZONES */
@@ -194,11 +194,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .custom-race-row{display:flex;gap:16px;align-items:center;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);}
 
 /* TEST HISTORY */
-.test-entry{background:var(--surface2);border-radius:var(--radius);padding:24px;margin-bottom:4px;border:1px solid transparent;transition:all 0.3s;}
+.test-entry{background:var(--surface2);border-radius:var(--radius);padding:18px 20px;margin-bottom:4px;border:1px solid transparent;transition:all 0.3s;}
 .test-entry:hover{border-color:var(--border2);}
-.test-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.test-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .test-date{font-family:var(--font-mono);font-size:13px;color:var(--text);letter-spacing:1px;text-transform:uppercase;}
-.test-metrics{display:flex;gap:32px;flex-wrap:wrap;}
+.test-metrics{display:flex;gap:24px;flex-wrap:wrap;}
 .test-metric{font-size:13px;}
 .test-metric-label{color:var(--text3);font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
 .test-metric-val{font-family:var(--font-mono);font-weight:500;color:var(--text);font-size:16px;}
@@ -208,10 +208,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);backdrop-filter:blur(5px);z-index:200;align-items:center;justify-content:center;padding:24px;}
 .modal-overlay.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
-.modal-title{font-family:var(--font-display);font-size:22px;font-weight:600;margin-bottom:32px;letter-spacing:1px;text-transform:uppercase;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-title{font-family:var(--font-display);font-size:28px;font-weight:700;margin-bottom:28px;letter-spacing:0.5px;text-transform:uppercase;}
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.modal-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:40px;padding-top:24px;border-top:1px solid var(--border);}
+.modal-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);}
 .btn-cancel{padding:12px 24px;background:none;border:1px solid var(--border);color:var(--text2);border-radius:var(--radius);cursor:pointer;font-family:var(--font-body);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;transition:all 0.3s;}
 .btn-cancel:hover{border-color:var(--text3);color:var(--text);}
 .btn-save{padding:12px 28px;background:var(--text);border:1px solid var(--text);color:var(--bg);border-radius:var(--radius);cursor:pointer;font-family:var(--font-body);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;transition:all 0.3s;}
@@ -227,7 +227,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .empty-state{text-align:center;padding:80px 24px;color:var(--text3);}
 .empty-state-icon{font-size:32px;margin-bottom:16px;opacity:0.3;}
 .empty-state-text{font-size:13px;letter-spacing:0.5px;}
-.section-divider{height:1px;background:var(--border);margin:32px 0;}
+.section-divider{height:1px;background:var(--border);margin:20px 0;}
 
 /* MANAGE */
 .athlete-list-row{display:flex;align-items:center;padding:20px 24px;background:var(--surface2);border-radius:var(--radius);border:1px solid transparent;margin-bottom:4px;gap:20px;transition:all 0.3s;}
@@ -236,7 +236,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .alr-meta{font-size:11px;color:var(--text2);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;}
 
 /* TABS */
-.tab-bar{display:flex;gap:4px;margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:0;width:fit-content;}
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;width:fit-content;}
 .tab-btn{padding:12px 24px;border:none;background:none;color:var(--text3);font-family:var(--font-body);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.3s;position:relative;}
 .tab-btn.active{color:var(--text);}
 .tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:var(--text);}
@@ -252,8 +252,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .btn-entry-edit:hover,.btn-entry-del:hover{opacity:1;}
 .entry-actions{display:flex;gap:4px;align-items:center;}
 .pending-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-family:var(--font-mono);border:1px solid var(--border);color:var(--orange);background:rgba(207,139,56,0.1);}
-.approval-queue{background:rgba(207,139,56,0.06);border:1px solid rgba(207,139,56,0.2);border-radius:var(--radius);padding:24px;margin-bottom:16px;}
-.approval-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.approval-queue{background:rgba(207,139,56,0.06);border:1px solid rgba(207,139,56,0.2);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;}
+.approval-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .approval-item{background:var(--surface2);border-radius:var(--radius);padding:20px;margin-bottom:8px;}
 .review-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
 .review-field{font-size:12px;}
@@ -2058,6 +2058,15 @@ function openProfile(id){
 }
 // Store per-athlete VDOT source override: {dist, timeSecs}
 const profileVDOTSource={};
+const profileMASCorrection={}; // athlete_id → multiplier (default 1.10 for 2.4km source)
+
+function applyMASCorrection(id,val){
+  profileMASCorrection[id]=parseFloat(val)||1.10;
+  // Persist choice in localStorage alongside VDOT overrides
+  try{localStorage.setItem('chk_mas_corrections',JSON.stringify(profileMASCorrection));}catch(e){}
+}
+// Restore saved corrections on load
+(()=>{try{const s=localStorage.getItem('chk_mas_corrections');if(s)Object.assign(profileMASCorrection,JSON.parse(s));}catch(e){}})();
 
 function getVDOTSourceForAthlete(id){
   return profileVDOTSource[id]||null;
@@ -2122,6 +2131,8 @@ function renderProfile(id,targetEl='profile-content'){
   const displayWeight=latestWithVal('weight')?.weight||a.weight||null;
   const hrZones=calcHRZones(rhr,mhr);
   let paceZones=null;if(vdot)paceZones=calcPaceZones(vdot);
+  const masCorrectionFactor=profileMASCorrection[id]||1.10;
+  const masForZones=mas?mas*masCorrectionFactor:null; // corrected MAS used for zone prescription
   let racePreds=null;if(vdot){const srcDist=override?.dist||(latest?.t2400?2400:latest?.t400?400:2400);racePreds=calcRacePredictions(vdot,srcDist);}
   const comps=approvedComps(a).sort((x,y)=>y.date.localeCompare(x.date));
   const pbs=approvedPBs(a);
@@ -2199,6 +2210,32 @@ function renderProfile(id,targetEl='profile-content'){
           </div>
           <button class="btn-accent" style="padding:7px 16px;font-size:12px" onclick="applyVDOTSourceOverride('${id}')">Apply</button>
         </div>
+
+        <!-- MAS CORRECTION FACTOR -->
+        ${isCoach?`
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:8px">
+            MAS Calibration Correction
+            <span style="color:var(--orange);margin-left:6px" title="2.4km average speed underestimates true MAS (vV̇O₂max) by ~10–15%. Apply a correction to prevent interval zones being set too easy.">⚠ important for zone accuracy</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select class="form-select" id="mas-correction-${id}" style="padding:6px 10px;font-size:12px;width:auto" onchange="applyMASCorrection('${id}',this.value);renderProfile('${id}')">
+              <option value="1.00" ${(profileMASCorrection[id]||1.10)===1.00?'selected':''}>No correction (direct MAS test — 30-15 IFT, Vameval)</option>
+              <option value="1.05" ${(profileMASCorrection[id]||1.10)===1.05?'selected':''}>×1.05 — 1200–1500m time trial source</option>
+              <option value="1.10" ${(!profileMASCorrection[id]||profileMASCorrection[id]===1.10)?'selected':''}>×1.10 — 2.4km run (recommended default)</option>
+              <option value="1.14" ${(profileMASCorrection[id]||1.10)===1.14?'selected':''}>×1.14 — 2.4km, conservative paced or fatigued effort</option>
+              <option value="1.12" ${(profileMASCorrection[id]||1.10)===1.12?'selected':''}>×1.12 — 3–5km source</option>
+            </select>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3)">
+            Corrected MAS: <span style="color:var(--accent);font-family:var(--font-mono);font-weight:600">${mas?(mas*(profileMASCorrection[id]||1.10)).toFixed(2):' —'} km/h</span>
+            <span style="color:var(--text3)"> vs raw ${mas?.toFixed(2)||'—'} km/h</span>
+            · Zones and pace prescriptions update to use the corrected value.
+          </div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text3);line-height:1.5">
+            The 2.4km run is sustained at ~85–90% VO₂max, so its average speed underestimates true MAS (vV̇O₂max). Without correction, interval zones are set ~10–15% too slow and athletes will beat prescribed times easily. If you use a 30-15 IFT or Vameval, set correction to 1.0 — those tests give true MAS directly.
+          </div>
+        </div>`:''}
         <div style="font-size:11px;color:var(--text3);margin-top:6px">Race predictions, pace zones, HR zones and intensity zones all update based on the source selected above. Note: "Aerobic Speed" is the average 2.4km run speed — a vV̇O₂max proxy, not a strict MAS test.</div>
       </div>
     </div>
@@ -2314,8 +2351,10 @@ function renderProfile(id,targetEl='profile-content'){
       </div>
       <!-- PACE + INTENSITY ZONES -->
       <div class="section-card" style="grid-column:1/-1">
-        <div class="section-title">Pace &amp; Intensity Zones <span style="font-size:10px;font-weight:400;color:var(--text3)">(VDOT ${vdot?.toFixed(1)||'—'} · Aero Speed ${mas?.toFixed(1)||'—'} km/h · source: ${vdotSourceLabel})</span></div>
-        ${paceZones&&mas ? renderMASZonesWithIntervals(paceZones,mas) : '<div style="color:var(--text3);font-size:13px">No test data. Add a test result or set a VDOT source above.</div>'}
+        <div class="section-title">Pace &amp; Intensity Zones
+          <span style="font-size:10px;font-weight:400;color:var(--text3)">(VDOT ${vdot?.toFixed(1)||'—'} · Aero Speed ${mas?.toFixed(1)||'—'} km/h${masCorrectionFactor!==1?` · corrected MAS <span style="color:var(--orange)">${masForZones?.toFixed(1)||'—'} km/h ×${masCorrectionFactor}</span>`:''} · source: ${vdotSourceLabel})</span>
+        </div>
+        ${paceZones&&masForZones ? renderMASZonesWithIntervals(paceZones,masForZones) : paceZones&&mas ? renderMASZonesWithIntervals(paceZones,mas) : '<div style="color:var(--text3);font-size:13px">No test data. Add a test result or set a VDOT source above.</div>'}
       </div>
     </div>
 
@@ -3587,9 +3626,13 @@ function calcVDOTStandalone(){
     document.getElementById('calc-vo2max-box').style.display='none';
   }
   const paceZones=calcPaceZones(vdot);
+  // Apply default 1.10 correction in calculator since source is unknown; user sees the note
+  const calcMasCorr=preset==='2400'||parseInt(dist)>=2400?1.10:preset==='1500'||parseInt(dist)>=1500?1.05:1.00;
+  const masCorrected=mas*calcMasCorr;
   document.getElementById('calc-zones-output').innerHTML=`
-    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono)">Pace &amp; Intensity Zones with Interval Times</div>
-    ${renderMASZonesWithIntervals(paceZones,mas)}`;
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono)">Pace &amp; Intensity Zones — Interval Prescription</div>
+    ${calcMasCorr!==1?`<div style="font-size:11px;color:var(--orange);margin-bottom:10px;font-family:var(--font-mono)">⚠ Auto-applied ×${calcMasCorr} correction for ${dist>=2400?'2.4km':'≥1.5km'} source — zones use corrected MAS ${masCorrected.toFixed(2)} km/h. Set correction on athlete profile to override.</div>`:''}
+    ${renderMASZonesWithIntervals(paceZones,masCorrected)}`;
   const preds=calcRacePredictions(vdot);
   document.getElementById('calc-races-output').innerHTML=`
     <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-family:var(--font-mono)">Race predictions</div>
