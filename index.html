@@ -2666,6 +2666,9 @@ function renderProfile(id,targetEl='profile-content'){
         <div class="section-title">HR zones <span style="font-size:10px;font-weight:400;color:var(--text3)">(Karvonen)</span></div>
         ${hrZones.map(z=>`<div class="zone-row"><div class="zone-dot" style="background:${z.color}"></div><div class="zone-name">${z.name}</div><div class="zone-range">${z.low}–${z.high} bpm</div></div>`).join('')}
       </div>
+      <!-- ENERGY SYSTEM PROFILE + CRITICAL SPEED -->
+      ${renderEnergySystemProfile(latest,masForZones)}
+
       <!-- PACE + INTENSITY ZONES -->
       <div class="section-card" style="grid-column:1/-1">
         <div class="section-title">Pace &amp; Intensity Zones
@@ -4127,6 +4130,233 @@ function calcHRZones(rhr,mhr){
     {name:'Zone 5 — Max effort',pct:[0.90,1.00],color:'#ff5e6c'},
   ].map(z=>({...z,low:Math.round(rhr+z.pct[0]*hrr),high:Math.round(rhr+z.pct[1]*hrr)}));
 }
+// ─── CRITICAL SPEED MODEL ────────────────────────────────────────
+// CS  = (d2 − d1) / (t2 − t1)   asymptote of the power-duration curve ≈ lactate threshold speed
+// D'  = d1 − CS × t1            finite anaerobic work capacity (metres)
+// Requires two trials at genuinely different durations (400m + 2.4km is ideal).
+function calcCriticalSpeed(t400, t2400){
+  if(!t400||!t2400||t2400<=t400)return null;
+  const cs=(2400-400)/(t2400-t400); // m/s
+  const dPrime=400-cs*t400;         // metres
+  if(dPrime<50||dPrime>800)return null; // sanity: outside 50–800 m is physiologically implausible
+  return{cs,csKmh:cs*3.6,dPrime:Math.round(dPrime)};
+}
+// Time (s) to exhaust D' when running at speedMs > CS.
+// Returns Infinity if speed ≤ CS (D' not depleted).
+function dPrimeDepletion(cs,dPrime,speedMs){
+  if(speedMs<=cs)return Infinity;
+  return Math.round(dPrime/(speedMs-cs));
+}
+// ─── ANAEROBIC SPEED RESERVE ─────────────────────────────────────
+// ASR = sprint speed (400m avg km/h) − aerobic speed (corrected MAS km/h).
+// Represents how much faster the athlete can run using anaerobic pathways.
+function calcASR(t400, masKmh){
+  if(!t400||!masKmh)return null;
+  const sprintKmh=(400/t400)*3.6;
+  return{asr:+(sprintKmh-masKmh).toFixed(2),sprintKmh:+sprintKmh.toFixed(2)};
+}
+// ─── ENERGY SYSTEM PROFILE RENDERER ─────────────────────────────
+function renderEnergySystemProfile(latest, masForZones){
+  if(!latest)return'';
+  const has400=!!latest.t400, has2400=!!latest.t2400;
+  if(!has400&&!has2400)return'';
+
+  const vdot400 =has400 ?calcVDOT(400,  latest.t400 ):null;
+  const vdot2400=has2400?calcVDOT(2400, latest.t2400):null;
+  const cs      =(has400&&has2400)?calcCriticalSpeed(latest.t400,latest.t2400):null;
+  const asrData =(has400&&masForZones)?calcASR(latest.t400,masForZones):null;
+  const speed400=has400?(400/latest.t400)*3.6:null;
+
+  // Profile type from VDOT gap
+  let profileLabel='',profileDesc='',profileColor='var(--text2)';
+  if(vdot400&&vdot2400){
+    const gap=vdot400-vdot2400;
+    if(gap>12){profileLabel='Speed-dominant';profileColor='var(--orange)';profileDesc='Strong anaerobic surplus. Prioritise aerobic base building — longer reps, lower intensity weeks — to lift the 2.4km VDOT toward 400m VDOT.';}
+    else if(gap>6){profileLabel='Speed-endurance';profileColor='var(--yellow)';profileDesc='Good speed reserve above aerobic ceiling. Well-suited to middle distance. Can train both systems effectively.';}
+    else if(gap>-2){profileLabel='Aerobically balanced';profileColor='var(--accent)';profileDesc='Speed and endurance capacities are closely matched — a versatile profile. Sustain both system loads equally.';}
+    else{profileLabel='Endurance-dominant';profileColor='var(--blue)';profileDesc='Aerobic capacity exceeds speed-endurance. Prioritise speed development — short hills, sprint drills, 150–200m reps — to raise the 400m VDOT.';}
+  }
+
+  // Sprint zone rows from 400m
+  let sprintZones='';
+  if(speed400){
+    const sprints=[
+      {name:'Max speed (acceleration)',pct:1.05,note:'10–30 m, full recovery'},
+      {name:'Speed-endurance (alactic)',pct:0.96,note:'60–80 m reps'},
+      {name:'Speed-endurance (lactic)',pct:0.90,note:'100–200 m reps'},
+      {name:'Special endurance',pct:0.85,note:'200–400 m reps'},
+    ];
+    sprintZones=`
+      <div style="margin-top:20px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:10px">Sprint Zones — from 400m avg speed (${speed400.toFixed(2)} km/h)</div>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr>
+            <th style="text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Zone</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">% Sprint Speed</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Speed (km/h)</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Target 100m</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Target 200m</th>
+            <th style="text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Session type</th>
+          </tr></thead>
+          <tbody>
+          ${sprints.map(z=>{
+            const spd=speed400*z.pct;
+            const t100=secsToMMSS(Math.round(100/(spd/3.6)));
+            const t200=secsToMMSS(Math.round(200/(spd/3.6)));
+            return`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px;font-weight:500;font-size:11px">${z.name}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--blue)">${(z.pct*100).toFixed(0)}%</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--accent)">${spd.toFixed(2)}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px">${t100}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px">${t200}</td>
+              <td style="padding:9px 10px;font-size:11px;color:var(--text3)">${z.note}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table></div>
+      </div>`;
+  }
+
+  // Critical Speed section
+  let csSection='';
+  if(cs){
+    const csPace=secsToMMSS(Math.round(1000/cs.cs));
+    // D' depletion at 3 reference speeds above CS
+    const above=[1.05,1.10,1.15].map(f=>{
+      const v=cs.cs*f;
+      const t=dPrimeDepletion(cs.cs,cs.dPrime,v);
+      const dist=Math.round(v*t); // max distance before depletion
+      return{pct:f,kmh:(v*3.6).toFixed(2),secs:t,pace:secsToMMSS(Math.round(1000/v)),dist};
+    });
+    csSection=`
+      <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--yellow)">
+        <div class="section-title">Critical Speed Model
+          <span style="font-size:11px;font-weight:400;color:var(--text3)">empirically derived from your 400m + 2.4km results</span>
+        </div>
+        <div style="display:flex;gap:2px;flex-wrap:wrap;background:var(--border);border:1px solid var(--border);margin-bottom:20px">
+          <div style="background:var(--surface);padding:16px 20px;flex:1;min-width:130px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">Critical Speed</div>
+            <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--yellow)">${cs.csKmh.toFixed(2)} <span style="font-size:13px;color:var(--text3)">km/h</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">${csPace} /km · sustainable threshold pace</div>
+          </div>
+          <div style="background:var(--surface);padding:16px 20px;flex:1;min-width:130px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">D' (Anaerobic Reserve)</div>
+            <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--purple)">${cs.dPrime} <span style="font-size:13px;color:var(--text3)">m</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">metres of above-CS work capacity</div>
+          </div>
+          ${asrData?`<div style="background:var(--surface);padding:16px 20px;flex:1;min-width:130px">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">Anaerobic Speed Reserve</div>
+            <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--orange)">${asrData.asr.toFixed(2)} <span style="font-size:13px;color:var(--text3)">km/h</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">sprint speed above aerobic ceiling</div>
+          </div>`:''}
+        </div>
+
+        <!-- CS-based zone table -->
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:10px">CS-Anchored Prescription Zones</div>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr>
+            <th style="text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Zone</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Speed (km/h)</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">Pace /km</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">400m target</th>
+            <th style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">800m target</th>
+            <th style="text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:0.5px">D' status</th>
+          </tr></thead>
+          <tbody>
+          ${[
+            {name:'Recovery',f:0.75,col:'#4fc3f7',note:'D\' fully recovers'},
+            {name:'Aerobic development',f:0.87,col:'#00e5a0',note:'D\' slowly recovers'},
+            {name:'CS / Threshold',f:1.00,col:'#ffd32a',note:'D\' neutral (boundary)'},
+            {name:'Supra-CS — VO₂max',f:1.08,col:'#ff9f43',note:`D' depletes · ~${dPrimeDepletion(cs.cs,cs.dPrime,cs.cs*1.08)}s max`},
+            {name:'Speed-endurance',f:1.15,col:'#ff5e6c',note:`D' depletes · ~${dPrimeDepletion(cs.cs,cs.dPrime,cs.cs*1.15)}s max`},
+          ].map(z=>{
+            const v=cs.cs*z.f;
+            const t400=secsToMMSS(Math.round(400/v));
+            const t800=secsToMMSS(Math.round(800/v));
+            const pace=secsToMMSS(Math.round(1000/v));
+            return`<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:9px 10px">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:8px;height:8px;border-radius:50%;background:${z.col};flex-shrink:0"></div>
+                  <span style="font-weight:500;font-size:11px">${z.name}</span>
+                </div>
+              </td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--accent)">${(v*3.6).toFixed(2)}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--text2)">${pace}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px">${t400}</td>
+              <td style="padding:9px 10px;text-align:center;font-family:var(--font-mono);font-size:11px">${t800}</td>
+              <td style="padding:9px 10px;font-size:11px;color:var(--text3)">${z.note}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table></div>
+
+        <!-- D' depletion guide at supra-CS paces -->
+        <div style="margin-top:18px">
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:10px">D' Depletion — Max Interval Duration at Above-CS Speeds</div>
+          <div style="display:flex;gap:2px;flex-wrap:wrap;background:var(--border);border:1px solid var(--border)">
+            ${above.map(z=>`
+              <div style="background:var(--surface);padding:14px 16px;flex:1;min-width:120px;text-align:center">
+                <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;margin-bottom:6px">${(z.pct*100).toFixed(0)}% CS · ${z.kmh} km/h</div>
+                <div style="font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--red)">${secsToMMSS(z.secs)}</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:4px">~${z.dist} m before D' empty</div>
+              </div>`).join('')}
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6">
+            D' replenishes at sub-CS speeds. Plan recovery intervals accordingly — rule of thumb: full D' recovery requires ~3× the depletion time at easy pace.
+            CS = ${cs.csKmh.toFixed(2)} km/h · D' = ${cs.dPrime} m · derived from ${secsToMMSS(latest.t400)} (400m) + ${secsToMMSS(latest.t2400)} (2.4km).
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Profile header section (always shown when any data)
+  const profilePanel=`
+    <div class="section-card" style="margin-bottom:16px">
+      <div class="section-title">Energy System Profile</div>
+
+      <!-- Metric chips row -->
+      <div style="display:flex;gap:2px;flex-wrap:wrap;background:var(--border);border:1px solid var(--border);margin-bottom:20px">
+        ${vdot2400?`<div style="background:var(--surface);padding:16px 20px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">VDOT — Aerobic (2.4km)</div>
+          <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--accent)">${vdot2400.toFixed(1)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">endurance capacity</div>
+        </div>`:''}
+        ${vdot400?`<div style="background:var(--surface);padding:16px 20px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">VDOT — Speed (400m)</div>
+          <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--orange)">${vdot400.toFixed(1)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">speed-endurance capacity</div>
+        </div>`:''}
+        ${(vdot400&&vdot2400)?`<div style="background:var(--surface);padding:16px 20px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">VDOT Gap</div>
+          <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:${profileColor}">${(vdot400-vdot2400).toFixed(1)}</div>
+          <div style="font-size:11px;color:${profileColor};margin-top:4px">${profileLabel}</div>
+        </div>`:''}
+        ${asrData?`<div style="background:var(--surface);padding:16px 20px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);margin-bottom:6px">Anaerobic Speed Reserve</div>
+          <div style="font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--purple)">${asrData.asr.toFixed(2)} <span style="font-size:13px;color:var(--text3)">km/h</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">${asrData.sprintKmh.toFixed(2)} sprint − ${masForZones?.toFixed(2)||'?'} aerobic</div>
+        </div>`:''}
+      </div>
+
+      <!-- Profile type bar -->
+      ${(vdot400&&vdot2400)?`
+      <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:var(--radius)">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
+          <span>Endurance-dominant</span><span>Balanced</span><span>Speed-dominant</span>
+        </div>
+        <div style="height:6px;background:linear-gradient(90deg,var(--blue),var(--accent),var(--orange));border-radius:3px;position:relative">
+          ${(()=>{const gap=vdot400-vdot2400;const pos=Math.min(Math.max((gap+5)/20*100,2),98);return`<div style="position:absolute;top:-5px;left:${pos}%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:${profileColor};border:2px solid var(--surface)" title="${profileLabel}: VDOT gap = ${gap.toFixed(1)}"></div>`;})()}
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:10px">${profileDesc}</div>
+      </div>`:''}
+
+      ${sprintZones}
+    </div>`;
+
+  return profilePanel + csSection;
+}
+
 function calcRacePredictions(vdot,sourceDist=2400){
   const races=[
     {label:'400 m',dist:400},{label:'800 m',dist:800},{label:'1 km',dist:1000},
