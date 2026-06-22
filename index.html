@@ -242,6 +242,41 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 .tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:var(--text);}
 
 .add-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--text);border:1px solid var(--text);color:var(--bg);border-radius:var(--radius);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-family:var(--font-body);transition:all 0.3s;white-space:nowrap;}
+
+/* LEADERBOARD */
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table thead tr{border-bottom:2px solid var(--border);}
+.lb-table th{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--font-mono);padding:14px 20px;text-align:left;font-weight:500;white-space:nowrap;}
+.lb-table tbody tr{border-bottom:1px solid var(--border);transition:background 0.15s;cursor:pointer;}
+.lb-table tbody tr:last-child{border-bottom:none;}
+.lb-table tbody tr:hover{background:var(--surface2);}
+.lb-table tbody tr.lb-gold{background:rgba(212,175,55,0.06);}
+.lb-table tbody tr.lb-silver{background:rgba(180,180,180,0.05);}
+.lb-table tbody tr.lb-bronze{background:rgba(180,120,60,0.05);}
+.lb-table td{padding:18px 20px;vertical-align:middle;}
+.lb-rank-cell{width:80px;text-align:center;}
+.lb-rank-num{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1;color:var(--text3);}
+.lb-rank-num.r1{color:var(--accent);font-size:36px;}
+.lb-rank-num.r2{color:#a8a8b0;font-size:32px;}
+.lb-rank-num.r3{color:#9a7040;font-size:30px;}
+.lb-medal{font-size:24px;line-height:1;}
+.lb-name{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--text);letter-spacing:-0.3px;margin-bottom:4px;}
+.lb-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.5px;}
+.lb-event-pill{display:inline-block;font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;color:var(--text2);border:1px solid var(--border);padding:3px 8px;border-radius:2px;}
+.lb-val-cell{min-width:140px;}
+.lb-val{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--text);letter-spacing:-0.5px;line-height:1;}
+.lb-val-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:4px;}
+.lb-bar-wrap{margin-top:8px;height:3px;background:var(--border);border-radius:2px;width:100%;min-width:80px;max-width:160px;}
+.lb-bar{height:3px;border-radius:2px;background:var(--accent);transition:width 0.4s ease;}
+.lb-change{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-family:var(--font-mono);font-weight:600;padding:4px 10px;border-radius:2px;letter-spacing:0.5px;white-space:nowrap;}
+.lb-up{color:var(--accent);background:var(--accent-dim2);}
+.lb-down{color:var(--red);background:rgba(201,92,92,0.08);}
+.lb-same{color:var(--text3);background:transparent;}
+.lb-new{color:var(--blue);background:rgba(123,148,163,0.1);}
+.lb-perf-pos{font-size:12px;color:var(--accent);font-family:var(--font-mono);font-weight:600;}
+.lb-perf-neg{font-size:12px;color:var(--red);font-family:var(--font-mono);font-weight:600;}
+.lb-date{font-size:11px;color:var(--text3);font-family:var(--font-mono);letter-spacing:0.5px;}
+
 /* EXTRA STYLES PRESERVED FROM WORKING BUILD */
 .btn-approve{padding:6px 14px;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3);color:var(--accent);border-radius:var(--radius);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-family:var(--font-body);transition:all 0.3s;}
 .btn-approve:hover{background:rgba(0,229,160,0.2);}
@@ -529,41 +564,53 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
       <div class="page-header">
         <div>
           <div class="page-title">Leaderboard</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:2px">Rankings based on fitness test results</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:6px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px">Squad performance rankings · maximal efforts only</div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
-        <select class="form-select" id="lb-metric" style="width:200px;padding:8px 12px" onchange="renderLeaderboard()">
-          <optgroup label="Running Performance">
-            <option value="mas">Aero Speed (km/h)</option>
-            <option value="vdot">VDOT</option>
-            <option value="t400">400m Time</option>
-            <option value="t2400">2.4km Time</option>
-          </optgroup>
-          <optgroup label="Race Predictions">
-            <option value="pred_800">Predicted 800m</option>
-            <option value="pred_1500">Predicted 1500m</option>
-            <option value="pred_3000">Predicted 3km</option>
-            <option value="pred_5000">Predicted 5km</option>
-            <option value="pred_10000">Predicted 10km</option>
-          </optgroup>
-          <optgroup label="Jump Performance">
-            <option value="cmj">CMJ Height (cm)</option>
-            <option value="sj">Squat Jump (cm)</option>
-          </optgroup>
-        </select>
-        <select class="form-select" id="lb-gender" style="width:130px;padding:8px 12px" onchange="renderLeaderboard()">
-          <option value="all">All genders</option>
-          <option value="M">Male ♂</option>
-          <option value="F">Female ♀</option>
-        </select>
-        <select class="form-select" id="lb-event" style="width:150px;padding:8px 12px" onchange="renderLeaderboard()">
-          <option value="all">All events</option>
-        </select>
-        <select class="form-select" id="lb-compare" style="width:180px;padding:8px 12px" onchange="renderLeaderboard()">
-          <option value="latest_vs_prev">Latest vs Previous test</option>
-          <option value="latest_vs_first">Latest vs First test</option>
-        </select>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:28px;padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Metric</div>
+          <select class="form-select" id="lb-metric" style="width:220px;padding:10px 14px" onchange="renderLeaderboard()">
+            <optgroup label="Running Performance">
+              <option value="mas">Aero Speed (km/h)</option>
+              <option value="vdot">VDOT</option>
+              <option value="t400">400m Time</option>
+              <option value="t2400">2.4km Time</option>
+            </optgroup>
+            <optgroup label="Race Predictions">
+              <option value="pred_800">Predicted 800m</option>
+              <option value="pred_1500">Predicted 1500m</option>
+              <option value="pred_3000">Predicted 3km</option>
+              <option value="pred_5000">Predicted 5km</option>
+              <option value="pred_10000">Predicted 10km</option>
+            </optgroup>
+            <optgroup label="Jump Performance">
+              <option value="cmj">CMJ Height (cm)</option>
+              <option value="sj">Squat Jump (cm)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Gender</div>
+          <select class="form-select" id="lb-gender" style="width:150px;padding:10px 14px" onchange="renderLeaderboard()">
+            <option value="all">All genders</option>
+            <option value="M">Male ♂</option>
+            <option value="F">Female ♀</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Event</div>
+          <select class="form-select" id="lb-event" style="width:160px;padding:10px 14px" onchange="renderLeaderboard()">
+            <option value="all">All events</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Compare against</div>
+          <select class="form-select" id="lb-compare" style="width:220px;padding:10px 14px" onchange="renderLeaderboard()">
+            <option value="latest_vs_prev">Previous test</option>
+            <option value="latest_vs_first">First test (overall progress)</option>
+          </select>
+        </div>
       </div>
       <div id="leaderboard-container"></div>
     </div>
@@ -3845,6 +3892,25 @@ function renderLeaderboard(){
   const event=document.getElementById('lb-event')?.value||'all';
   const compare=document.getElementById('lb-compare')?.value||'latest_vs_prev';
 
+  const getMetric=(t,m)=>{
+    if(!t)return null;
+    if(m==='mas')return t.t2400?calcMAS2400(t.t2400):null;
+    if(m==='vdot')return t.t2400?calcVDOT(2400,t.t2400):null;
+    if(m==='t400')return t.t400?-t.t400:null;
+    if(m==='t2400')return t.t2400?-t.t2400:null;
+    if(m==='cmj')return t.cmj?parseFloat(t.cmj):null;
+    if(m==='sj')return t.sj?parseFloat(t.sj):null;
+    if(m.startsWith('pred_')){
+      const d=parseInt(m.replace('pred_',''));
+      if(!t.t2400)return null;
+      return -predictRaceTime(calcVDOT(2400,t.t2400),d);
+    }
+    return null;
+  };
+
+  const isTime=metric==='t400'||metric==='t2400'||metric.startsWith('pred_');
+  const metricLabel=document.getElementById('lb-metric')?.selectedOptions[0]?.text||metric;
+
   let entries=DB.athletes
     .filter(a=>gender==='all'||a.gender===gender)
     .filter(a=>event==='all'||a.event===event)
@@ -3853,35 +3919,14 @@ function renderLeaderboard(){
       const latest=tests[0];
       const ref=compare==='latest_vs_first'?tests[tests.length-1]:tests[1];
       if(!latest)return null;
-
-      let val=null,refVal=null,display='—';
-
-      const getMetric=(t)=>{
-        if(!t)return null;
-        if(metric==='mas')return t.t2400?calcMAS2400(t.t2400):null;
-        if(metric==='vdot')return t.t2400?calcVDOT(2400,t.t2400):null;
-        if(metric==='t400')return t.t400?-t.t400:null;
-        if(metric==='t2400')return t.t2400?-t.t2400:null;
-        if(metric==='cmj')return t.cmj?parseFloat(t.cmj):null;
-        if(metric==='sj')return t.sj?parseFloat(t.sj):null;
-        if(metric.startsWith('pred_')){
-          const d=parseInt(metric.replace('pred_',''));
-          if(!t.t2400)return null;
-          return -predictRaceTime(calcVDOT(2400,t.t2400),d);
-        }
-        return null;
-      };
-
-      val=getMetric(latest);
-      refVal=getMetric(ref);
+      const val=getMetric(latest,metric);
       if(val===null)return null;
-
-      const isTime=metric==='t400'||metric==='t2400'||metric.startsWith('pred_');
+      const refVal=ref?getMetric(ref,metric):null;
+      let display;
       if(isTime)display=secsToHHMMSS(Math.abs(val));
-      else if(metric==='mas')display=(-0,Math.abs(val)).toFixed(2)+' km/h';
-      else if(metric==='vdot')display=val.toFixed(1);
-      else display=val+'cm';
-
+      else if(metric==='mas')display=Math.abs(val).toFixed(2)+' km/h';
+      else if(metric==='vdot')display=Math.abs(val).toFixed(1);
+      else display=Math.abs(val)+'cm';
       return{a,val,refVal,display,latestDate:latest.date,refDate:ref?.date||null,testCount:tests.length,isTime};
     })
     .filter(Boolean)
@@ -3892,79 +3937,101 @@ function renderLeaderboard(){
     return;
   }
 
-  // Assign ranks (ties share rank)
+  // Rank assignment (ties share rank)
   let rank=1;
-  entries.forEach((e,i)=>{
-    if(i>0&&e.val!==entries[i-1].val)rank=i+1;
-    e.rank=rank;
-  });
+  entries.forEach((e,i)=>{if(i>0&&e.val!==entries[i-1].val)rank=i+1;e.rank=rank;});
 
-  // Compute previous rank order
-  const prevEntries=entries.filter(e=>e.refVal!==null).sort((a,b)=>b.refVal-a.refVal);
+  // Previous rank for movement arrows
+  const prevEntries=[...entries].filter(e=>e.refVal!==null).sort((a,b)=>b.refVal-a.refVal);
   prevEntries.forEach((e,i)=>e.prevRank=i+1);
 
-  const medal=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':'';
-  const metricLabel=document.getElementById('lb-metric')?.selectedOptions[0]?.text||metric;
+  // Bar scale — normalise to leader's value
+  const maxAbsVal=Math.max(...entries.map(e=>Math.abs(e.val)));
 
   const rankBadge=(e)=>{
-    if(e.testCount===1||e.refVal===null)return`<span class="lb-change lb-new">NEW</span>`;
-    if(e.prevRank===undefined)return'';
+    if(e.testCount===1||e.refVal===null||e.prevRank===undefined)return`<span class="lb-change lb-new">NEW</span>`;
     const d=e.prevRank-e.rank;
     if(d>0)return`<span class="lb-change lb-up">▲ ${d}</span>`;
     if(d<0)return`<span class="lb-change lb-down">▼ ${Math.abs(d)}</span>`;
-    return`<span class="lb-change lb-same">— —</span>`;
+    return`<span class="lb-change lb-same">—</span>`;
   };
 
-  const perfChange=(e)=>{
+  const perfDelta=(e)=>{
     if(e.testCount===1||e.refVal===null)return'';
     const diff=e.val-e.refVal;
-    if(Math.abs(diff)<0.001)return'';
+    if(Math.abs(diff)<0.001)return'<span class="lb-same" style="font-size:11px;font-family:var(--font-mono)">No change</span>';
     const improved=diff>0;
-    const color=improved?'var(--accent)':'var(--red)';
+    const cls=improved?'lb-perf-pos':'lb-perf-neg';
     const arrow=improved?'▲':'▼';
-    if(e.isTime){
-      const secs=Math.abs(diff);
-      return`<div style="font-size:11px;font-family:var(--font-mono);color:${color}">${improved?'▲ -':'▼ +'}${secsToMMSS(secs)}</div>`;
-    }
-    return`<div style="font-size:11px;font-family:var(--font-mono);color:${color}">${arrow} ${Math.abs(diff).toFixed(2)}</div>`;
+    if(e.isTime){const s=Math.abs(diff);return`<div class="${cls}">${improved?'▲ −':'▼ +'}<span>${secsToMMSS(Math.round(s))}</span></div>`;}
+    return`<div class="${cls}">${arrow} ${Math.abs(diff).toFixed(2)}</div>`;
   };
+
+  const medalRow=r=>r===1?'lb-gold':r===2?'lb-silver':r===3?'lb-bronze':'';
+  const rankClass=r=>r===1?'r1':r===2?'r2':r===3?'r3':'';
+  const rankDisplay=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':`#${r}`;
 
   container.innerHTML=`
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
-      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="font-weight:600;font-size:14px">${metricLabel} — ${entries.length} athlete${entries.length!==1?'s':''}</div>
-        <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">${compare==='latest_vs_first'?'rank change vs first test':'rank change vs previous test'}</div>
+
+      <!-- Header bar -->
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:0.5px">${metricLabel}</div>
+          <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:4px;text-transform:uppercase;letter-spacing:1px">
+            ${entries.length} athlete${entries.length!==1?'s':''} ranked
+            · ${gender==='all'?'All genders':gender==='M'?'Male':'Female'}
+            ${event!=='all'?'· '+event:''}
+            · ${compare==='latest_vs_first'?'vs first test':'vs previous test'}
+          </div>
+        </div>
+        <div style="display:flex;gap:24px">
+          ${[1,2,3].map(r=>{const e=entries.find(x=>x.rank===r);if(!e)return'';return`
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${r===1?'🥇':r===2?'🥈':'🥉'}</div>
+              <div style="font-family:var(--font-display);font-size:13px;font-weight:600">${e.a.fname} ${e.a.lname}</div>
+              <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent)">${e.display}</div>
+            </div>`;}).join('')}
+        </div>
       </div>
+
+      <!-- Table -->
       <div style="overflow-x:auto">
       <table class="lb-table">
         <thead><tr>
-          <th style="width:52px">Rank</th>
-          <th>Athlete</th>
+          <th class="lb-rank-cell">Rank</th>
+          <th style="min-width:200px">Athlete</th>
           <th>Event</th>
-          <th>${metricLabel}</th>
-          <th>Change</th>
-          <th>Rank ∆</th>
-          <th style="font-size:10px">Latest test</th>
+          <th style="min-width:160px">${metricLabel}</th>
+          <th style="min-width:100px">Change</th>
+          <th style="min-width:80px">Rank ∆</th>
+          <th style="min-width:110px">Tested</th>
         </tr></thead>
         <tbody>
-          ${entries.map(e=>`
-            <tr onclick="openProfile('${e.a.id}')">
-              <td>
-                <span class="lb-rank ${e.rank<=3?'lb-rank-'+e.rank:'lb-rank-other'}">${medal(e.rank)||'#'+e.rank}</span>
+          ${entries.map(e=>{
+            const barPct=Math.round((Math.abs(e.val)/maxAbsVal)*100);
+            return `
+            <tr class="${medalRow(e.rank)}" onclick="openProfile('${e.a.id}')">
+              <td class="lb-rank-cell">
+                <div class="lb-rank-num ${rankClass(e.rank)}">${rankDisplay(e.rank)}</div>
               </td>
               <td>
                 <div class="lb-name">${e.a.fname} ${e.a.lname}</div>
-                <div style="font-size:11px;color:var(--text3)">${e.a.gender==='M'?'♂ Male':'♀ Female'} · Age ${calcAge(e.a.dob)}</div>
+                <div class="lb-sub">${e.a.gender==='M'?'♂ Male':'♀ Female'} · Age ${calcAge(e.a.dob)} · ${e.testCount} test${e.testCount!==1?'s':''}</div>
               </td>
-              <td style="color:var(--text2);font-size:12px">${e.a.event||'—'}</td>
-              <td>
+              <td><span class="lb-event-pill">${e.a.event||'—'}</span></td>
+              <td class="lb-val-cell">
                 <div class="lb-val">${e.display}</div>
-                ${perfChange(e)}
+                <div class="lb-bar-wrap"><div class="lb-bar" style="width:${barPct}%"></div></div>
               </td>
-              <td>${perfChange(e)}</td>
+              <td>${perfDelta(e)||'<span style="color:var(--text3);font-size:12px;font-family:var(--font-mono)">—</span>'}</td>
               <td>${rankBadge(e)}</td>
-              <td style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">${e.latestDate}</td>
-            </tr>`).join('')}
+              <td>
+                <div class="lb-date">${e.latestDate}</div>
+                ${e.refDate&&e.refDate!==e.latestDate?`<div style="font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:2px">prev: ${e.refDate}</div>`:''}
+              </td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
       </div>
