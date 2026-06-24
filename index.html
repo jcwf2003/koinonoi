@@ -1574,16 +1574,22 @@ let sb = null;
 
 function setSync(state){
   const el=document.getElementById('sync-status');if(!el)return;
-  if(state==='ok'){el.textContent='🟢 Synced';el.style.color='var(--accent)';}
-  else if(state==='saving'){el.textContent='⏳ Saving...';el.style.color='var(--text3)';}
-  else if(state==='error'){el.textContent='⚠️ Sync error';el.style.color='var(--orange)';}
-  else if(state==='offline'){el.textContent='🔴 Offline';el.style.color='var(--red)';}
+  if(state==='ok'){
+    el.innerHTML='✓ Synced';el.style.color='var(--accent)';
+    setTimeout(()=>{if(el.innerHTML==='✓ Synced')el.innerHTML='';},3000);
+  }
+  else if(state==='saving'){el.innerHTML='⏳ Saving…';el.style.color='var(--text3)';}
+  else if(state==='error'){el.innerHTML='⚠ Sync error';el.style.color='var(--orange)';}
+  else if(state==='offline'){
+    el.style.color='var(--red)';
+    el.innerHTML=`🔴 Offline &nbsp;<button onclick="retrySync()" style="padding:2px 9px;border:1px solid var(--border);background:none;color:var(--text2);border-radius:var(--radius);font-size:10px;font-family:var(--font-mono);cursor:pointer;text-transform:uppercase;letter-spacing:0.5px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">Retry</button>`;
+  }
+  else if(state==='local'){el.innerHTML='📦 Local cache';el.style.color='var(--orange)';}
 }
 
 async function initSupabase(){
   try {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-    // Load coach password hash from app_settings
     try {
       const {data}=await sb.from('app_settings').select('value').eq('key','coach_pw_hash').single();
       if(data&&data.value)COACH_PW_HASH=data.value;
@@ -1593,23 +1599,69 @@ async function initSupabase(){
   } catch(e){
     console.error('Supabase init error:',e);
     setSync('offline');
+    loadFromLocalStorage(); // fall back to cached data so app stays usable
+  }
+}
+
+// Load from localStorage when Supabase is unreachable
+function loadFromLocalStorage(){
+  try{
+    const saved=localStorage.getItem('squadtracker_v2');
+    if(saved){
+      const parsed=JSON.parse(saved);
+      if(parsed.athletes?.length){
+        DB=parsed;
+        console.log('Loaded from localStorage fallback:',DB.athletes.length,'athletes');
+        setSync('local');
+        if(currentUser)refreshCurrentView();
+        return true;
+      }
+    }
+  }catch(e){console.warn('localStorage fallback failed:',e);}
+  return false;
+}
+
+async function retrySync(){
+  setSync('saving');
+  try{
+    if(!sb)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+    try{
+      const {data}=await sb.from('app_settings').select('value').eq('key','coach_pw_hash').single();
+      if(data&&data.value)COACH_PW_HASH=data.value;
+    }catch(e){}
+    await pullFromSupabase();
+    setSync('ok');
+  }catch(e){
+    console.error('Retry failed:',e);
+    setSync('offline');
   }
 }
 
 // Pull all tables and assemble into DB.athletes structure
 async function pullFromSupabase(){
   if(!sb)return;
-  const [ath,tests,comps,pbs,achs,diary,flags,vdotOvr] = await Promise.all([
+
+  // ── Core tables (must succeed) ──────────────────────────────
+  const [ath,tests,comps,pbs,achs,diary] = await Promise.all([
     sb.from('athletes').select('*'),
     sb.from('test_results').select('*'),
     sb.from('competitions').select('*'),
     sb.from('personal_bests').select('*'),
     sb.from('achievements').select('*'),
     sb.from('diary_entries').select('*'),
-    sb.from('athlete_flags').select('*').order('started_on',{ascending:false}),
-    sb.from('vdot_source_overrides').select('*'),
   ]);
-  if(ath.error)throw ath.error;
+  if(ath.error)throw ath.error; // only throw on core table failure
+
+  // ── Optional tables (new — may not exist yet, fail silently) ─
+  // If the user hasn't run the latest SQL, these tables won't exist.
+  // We skip them gracefully so the app still loads.
+  let flagsData=[], vdotOvrData=[];
+  try{const r=await sb.from('athlete_flags').select('*').order('started_on',{ascending:false});if(r.data&&!r.error)flagsData=r.data;}
+  catch(e){console.info('athlete_flags not available yet — run the latest SQL');}
+  if(!flagsData.length){const r=await sb.from('athlete_flags').select('*').order('started_on',{ascending:false}).catch(()=>({data:[]}));if(r.data)flagsData=r.data;}
+
+  try{const r=await sb.from('vdot_source_overrides').select('*');if(r.data&&!r.error)vdotOvrData=r.data;}
+  catch(e){console.info('vdot_source_overrides not available yet — run the latest SQL');}
 
   const athletes = (ath.data||[]).map(r=>({
     id:r.id, fname:r.fname, lname:r.lname, dob:r.dob, gender:r.gender,
@@ -1634,11 +1686,9 @@ async function pullFromSupabase(){
   (diary.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.diary.push({
     id:r.id,date:r.entry_date,type:r.type,mood:r.mood,rpe:r.rpe,
     duration:r.duration_min||null,content:r.content});});
-  (flags.data||[]).forEach(r=>{const a=byId[r.athlete_id];if(a)a.flags.push({
+  flagsData.forEach(r=>{const a=byId[r.athlete_id];if(a)a.flags.push({
     id:r.id,type:r.type,description:r.description,startedOn:r.started_on,endedOn:r.ended_on});});
-
-  // Restore VDOT overrides into in-memory map
-  (vdotOvr.data||[]).forEach(r=>{
+  vdotOvrData.forEach(r=>{
     profileVDOTSource[r.athlete_id]={dist:r.dist_metres,timeSecs:r.time_secs};
   });
 
