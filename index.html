@@ -1484,6 +1484,9 @@ async function hashPassword(pw){
 }
 // Coach password hash is loaded from Supabase app_settings at init.
 let COACH_PW_HASH = null;
+// Fallback: same SHA-256 value as stored in security.sql app_settings.
+// Used when Supabase is offline or app_settings hasn't loaded yet.
+const COACH_PW_HASH_FALLBACK = '86551c6e5827a87853c470f6148a362943a92f38f8dc7220a601bc47fa80c0a8';
 
 // ─── DATA STORE ───────────────────────────────────────────────
 let DB = {
@@ -1793,8 +1796,16 @@ async function doLogin(){
   document.getElementById('login-error').style.display='none';
   if(loginTab==='signup'){doSignup();return;}
   if(loginTab==='coach'){
+    // If hash wasn't loaded at init, try once more now
+    if(!COACH_PW_HASH && sb){
+      try{
+        const {data}=await sb.from('app_settings').select('value').eq('key','coach_pw_hash').single();
+        if(data&&data.value)COACH_PW_HASH=data.value;
+      }catch(e){}
+    }
     const entered=await hashPassword(document.getElementById('coach-pw').value);
-    if(COACH_PW_HASH&&entered===COACH_PW_HASH){currentUser={type:'coach'};launchApp();}
+    const checkHash=COACH_PW_HASH||COACH_PW_HASH_FALLBACK;
+    if(entered===checkHash){currentUser={type:'coach'};launchApp();}
     else{document.getElementById('login-error').textContent='Incorrect password. Try again.';document.getElementById('login-error').style.display='block';}
   } else if(loginTab==='public'){
     currentUser={type:'public'};launchApp();
